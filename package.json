@@ -1,0 +1,42 @@
+{
+  "name": "dsh-newapi-studio",
+  "version": "0.6.0",
+  "description": "New API gateway for DeepSeek Harness: models with context and modality details, balance, image and video generation.",
+  "license": "MIT",
+  "type": "module",
+  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "new-api", "newapi", "one-api", "llm-provider", "image-generation", "video-generation"],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": ["index.js", "client.js", "lib/*.js", "cordis.patch.yml", "locale/*.json", "icon.svg", "README.md", "README.zh.md", "LICENSE"],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=22.19.0", "dsh": ">=0.2.1-rc.1 <0.3.0-0" },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-llm": ">=0.2.1-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-llm-pi-ai": ">=0.2.1-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-credentials": ">=0.2.1-rc.1 <0.3.0-0",
+    "@deepseek-ai/schemastery": "^3.18.1",
+    "@earendil-works/pi-ai": ">=1.0.0 <2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-llm": { "optional": true },
+    "@deepseek-ai/dsh-llm-pi-ai": { "optional": true },
+    "@deepseek-ai/dsh-credentials": { "optional": true },
+    "@deepseek-ai/schemastery": { "optional": true },
+    "@earendil-works/pi-ai": { "optional": true }
+  },
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": ["@deepseek-ai/dsh-client-ui-conversation"]
+    }
+  }
+}
