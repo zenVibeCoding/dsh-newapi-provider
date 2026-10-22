@@ -79,17 +79,17 @@ test('adapter prepared stream stays on original channel after activation switch;
   const host = { connection: () => ({ displayName: active }), capture: () => {
     const id = active;
     return {
-      connection: { channelId: id, providerId: 'newapi-studio', displayName: id, baseURL: `https://${id}.example`, endpointPriority: ['openai'], headers: {}, apiKeyRef: id },
+      connection: { channelId: id, providerId: 'newapi-provider', displayName: id, baseURL: `https://${id}.example`, endpointPriority: ['openai'], headers: {}, apiKeyRef: id },
       requireApiKey: async () => { if (id === 'a') await gate.promise; return `key-${id}`; },
       catalog: async () => ({ entries: [{ id: 'm', name: id, kind: 'chat', input: ['text'], endpointTypes: ['openai'], source: { overridden: [] } }] }),
     };
   } };
   const adapter = new Adapter(host);
-  const preparing = adapter.prepareCall('newapi-studio', 'm');
+  const preparing = adapter.prepareCall('newapi-provider', 'm');
   active = 'b';
-  const next = await adapter.prepareCall('newapi-studio', 'm');
+  const next = await adapter.prepareCall('newapi-provider', 'm');
   gate.resolve(); const original = await preparing;
-  const collect = async (call) => { const result = []; for await (const item of call.stream({ provider: 'newapi-studio', model: 'm' })) result.push(item); return result[0]; };
+  const collect = async (call) => { const result = []; for await (const item of call.stream({ provider: 'newapi-provider', model: 'm' })) result.push(item); return result[0]; };
   assert.deepEqual(await collect(original), { url: 'https://a.example/v1', key: 'key-a', name: 'a' });
   assert.deepEqual(await collect(next), { url: 'https://b.example/v1', key: 'key-b', name: 'b' });
 });

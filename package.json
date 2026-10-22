@@ -1,6 +1,6 @@
 {
-  "name": "dsh-newapi-studio",
-  "version": "0.6.0",
+  "name": "dsh-newapi-provider",
+  "version": "0.7.0",
   "description": "New API gateway for DeepSeek Harness: models with context and modality details, balance, image and video generation.",
   "license": "MIT",
   "type": "module",

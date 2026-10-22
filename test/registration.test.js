@@ -27,7 +27,7 @@ test('other optional services are not read eagerly at apply time', () => {
 
 test('the route prefix stays outside the DSH-owned /api/ namespace', () => {
   const prefix = source.match(/const ROUTE_PREFIX = '([^']+)'/)?.[1];
-  assert.equal(prefix, '/newapi-studio/api/');
+  assert.equal(prefix, '/newapi-provider/api/');
   assert.ok(!prefix.startsWith('/api/'), 'DSH owns /api/');
   // Registered path must not end with a slash, or child paths never match.
   assert.match(source, /path: ROUTE_PREFIX\.slice\(0, -1\)/);

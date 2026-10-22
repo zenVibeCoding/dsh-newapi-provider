@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ChannelService, resolveChannels, mergeModelOverride, taskChannel, registerAsyncEffect } from '../lib/channels.js';
 
-function fixture(raw = { channels: [{ id: 'a', name: 'A', baseURL: 'https://a.example', apiKeyEnv: 'A', models: {} }, { id: 'b', name: 'B', baseURL: 'https://b.example', apiKeyEnv: 'B', models: {} }], activeChannel: 'a', providerId: 'newapi-studio', unrelated: { keep: true } }) {
+function fixture(raw = { channels: [{ id: 'a', name: 'A', baseURL: 'https://a.example', apiKeyEnv: 'A', models: {} }, { id: 'b', name: 'B', baseURL: 'https://b.example', apiKeyEnv: 'B', models: {} }], activeChannel: 'a', providerId: 'newapi-provider', unrelated: { keep: true } }) {
   let value = structuredClone(raw), revision = 7;
   const keys = new Map([['A', 'secret-a'], ['B', 'secret-b']]);
   const calls = [];
@@ -54,12 +54,12 @@ test('writes require revision and serialize competing stale updates', async () =
   ]);
   assert.equal(outcomes[0].status, 'fulfilled'); assert.equal(outcomes[1].reason.status, 409);
   assert.equal(f.current().activeChannel, 'b'); assert.equal(f.current().channels.length, 2);
-  assert.equal(f.current().providerId, 'newapi-studio'); assert.deepEqual(f.current().unrelated, { keep: true });
+  assert.equal(f.current().providerId, 'newapi-provider'); assert.deepEqual(f.current().unrelated, { keep: true });
   assert.equal(f.calls[0].expected, 7);
 });
 
 test('legacy migration preserves settings and never deletes ambient credential', async () => {
-  const f = fixture({ baseURL: 'https://a.example', apiKeyEnv: 'A', models: { m: { custom: true } }, headers: { 'x-local': 'keep' }, providerId: 'newapi-studio' });
+  const f = fixture({ baseURL: 'https://a.example', apiKeyEnv: 'A', models: { m: { custom: true } }, headers: { 'x-local': 'keep' }, providerId: 'newapi-provider' });
   await f.service.run('save', { id: 'default', revision: 7, name: 'Local', baseURL: 'https://a.example' });
   assert.equal(f.current().channels[0].apiKeyEnv, 'A');
   assert.deepEqual(f.current().channels[0].models, { m: { custom: true } });

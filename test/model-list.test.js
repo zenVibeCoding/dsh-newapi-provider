@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-process.env.DSH_HOME = fs.mkdtempSync(path.join(os.tmpdir(), 'newapi-studio-list-'));
+process.env.DSH_HOME = fs.mkdtempSync(path.join(os.tmpdir(), 'newapi-provider-list-'));
 const { applyModelsSet, resolveChannels } = await import('../lib/channels.js');
 const { Catalog } = await import('../lib/catalog.js');
 const { ModelTester, classifyTestError, pickTestProtocol, requestFor } = await import('../lib/model-test.js');

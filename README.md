@@ -1,4 +1,4 @@
-# New API Studio
+# New API Provider
 
 English · [中文](README.zh.md)
 
@@ -7,7 +7,7 @@ A New API gateway workbench for DeepSeek Harness. **Development build; not publi
 ## Features
 
 - Save multiple gateways and activate exactly one; each has its own URL, credential reference and model overrides.
-- Add, edit, test, activate and remove gateways in **Settings → New API Studio**.
+- Add, edit, test, activate and remove gateways in **Settings → New API Provider**.
 - Show token quota and usage. Unlimited tokens show used quota, not a misleading negative remaining amount.
 - Discover gateway models; enrich context size, output limits and modalities from models.dev.
 - Search models and edit context, output cap, type, input capabilities and visibility without YAML.
@@ -15,9 +15,9 @@ A New API gateway workbench for DeepSeek Harness. **Development build; not publi
 
 ## Requirements and local installation
 
-Verified runtime: **DSH 0.2.1-rc.2**, Node.js 22.19+. Install the local project directory using DSH's plugin manager, refresh the existing page, then open Settings → New API Studio. No separate web server is needed. Do not install this name from npm before publication.
+Verified runtime: **DSH 0.2.1-rc.2**, Node.js 22.19+. Install the local project directory using DSH's plugin manager, refresh the existing page, then open Settings → New API Provider. No separate web server is needed. Do not install this name from npm before publication.
 
-This replaces, rather than depends on, `dsh-gateway-provider`. Two adapters cannot own the same provider route. The development installation uses `newapi-studio`; an existing route name can be retained through `providerId` after removing the previous owner.
+This replaces, rather than depends on, `dsh-gateway-provider`. Two adapters cannot own the same provider route. The development installation uses `newapi-provider`; an existing route name can be retained through `providerId` after removing the previous owner.
 
 ## Gateways
 

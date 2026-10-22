@@ -12,7 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { gradientPng } from './fixtures/png.js';
 
-const home = fs.mkdtempSync(path.join(os.tmpdir(), 'newapi-studio-test-'));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), 'newapi-provider-test-'));
 process.env.DSH_HOME = home;
 const { registerMedia } = await import('../lib/media.js');
 

@@ -1,5 +1,5 @@
 /**
- * dsh-newapi-studio — Host half.
+ * dsh-newapi-provider — Host half.
  *
  * New API gateways inside DeepSeek Harness:
  *   - several gateway "channels" (address + token); exactly one is active and
@@ -7,7 +7,7 @@
  *   - model list from the active gateway, with context window / output cap /
  *     modalities from models.dev and per-model, per-channel user overrides;
  *   - token and account balance per channel from /api/usage/token/;
- *   - a session-checked JSON API under /newapi-studio/api/ that the Web UI
+ *   - a session-checked JSON API under /newapi-provider/api/ that the Web UI
  *     half reads and writes (channel edits go through the DSH settings service,
  *     tokens through the DSH credential service).
  * Image and video tools register from ./lib/media.js.
@@ -25,10 +25,10 @@ import { ChannelService, resolveChannels, taskChannel, registerAsyncEffect } fro
 import { ModelTester } from './lib/model-test.js';
 export { resolveChannels } from './lib/channels.js';
 
-export const name = 'newapi-studio';
+export const name = 'newapi-provider';
 export const inject = ['llm'];
 
-const ROUTE_PREFIX = '/newapi-studio/api/';
+const ROUTE_PREFIX = '/newapi-provider/api/';
 const ENDPOINT_TYPES = ['openai', 'anthropic', 'openai-response', 'gemini'];
 const KINDS = ['chat', 'image', 'video', 'audio', 'embedding', 'other'];
 const LEVELS = ['off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'];
@@ -65,7 +65,7 @@ export const Config = z.object({
   baseURL: z.string().description('Single-gateway form (used when `channels` is empty).'),
   apiKeyEnv: z.string().role('credential-ref').description('Single-gateway form: credential holding the token.'),
   models: z.dict(ModelOverride).description('Single-gateway form: per-model overrides.'),
-  providerId: z.string().default('newapi-studio').description('Provider route id in the model picker. Changing it orphans sessions that use the old id.'),
+  providerId: z.string().default('newapi-provider').description('Provider route id in the model picker. Changing it orphans sessions that use the old id.'),
   displayName: z.string().default('New API').description('Provider name shown in the model picker.'),
   endpointPriority: z.array(z.union(ENDPOINT_TYPES)).default([...DEFAULT_ENDPOINT_PRIORITY]).description('Preferred wire protocol when a model supports several.'),
   defaultContextWindow: z.number().step(1).min(1).default(DEFAULT_CONTEXT_WINDOW).description('Context window used when neither models.dev nor an override sizes a model.'),
@@ -98,7 +98,7 @@ async function readBody(req, limit = 64 * 1024) {
 }
 
 export function apply(ctx, config) {
-  const settingsNs = ctx.fiber.entry?.options.id ?? 'newapi-studio';
+  const settingsNs = ctx.fiber.entry?.options.id ?? 'newapi-provider';
   const current = () => (typeof config?.get === 'function' ? config.get() : config) ?? {};
   const errors = new Map();
   const reportError = (scope, error) => {
@@ -123,7 +123,7 @@ export function apply(ctx, config) {
     return {
       channelId: ch.id,
       channelName: ch.name,
-      providerId: raw.providerId || 'newapi-studio',
+      providerId: raw.providerId || 'newapi-provider',
       displayName: raw.displayName || 'New API',
       baseURL: ch.baseURL,
       apiKeyRef: credentialRef(ch.apiKeyEnv),
@@ -136,7 +136,7 @@ export function apply(ctx, config) {
       defaultMaxTokens: raw.defaultMaxTokens ?? DEFAULT_MAX_TOKENS,
       headers: { ...(raw.headers ?? {}), ...(ch.headers ?? {}) },
       streamIdleTimeoutMs: raw.streamIdleTimeoutMs ?? 300_000,
-      retryPolicy: resolveRetryPolicy(raw.retryPolicy, 'newapi-studio retryPolicy'),
+      retryPolicy: resolveRetryPolicy(raw.retryPolicy, 'newapi-provider retryPolicy'),
       balanceRefreshSeconds: raw.balanceRefreshSeconds ?? 120,
     };
   };
@@ -157,9 +157,9 @@ export function apply(ctx, config) {
     const ref = credentialRef(ch.apiKeyEnv);
     const hit = credentials ? (await credentials.resolve(ref))?.value : process.env[ch.apiKeyEnv];
     if (!hit) {
-      throw new LlmError(`newapi-studio: no token stored for channel "${ch.name}" (credential ${ch.apiKeyEnv}); add it in Settings → New API Studio`, 'MISSING_CREDENTIAL');
+      throw new LlmError(`newapi-provider: no token stored for channel "${ch.name}" (credential ${ch.apiKeyEnv}); add it in Settings → New API Provider`, 'MISSING_CREDENTIAL');
     }
-    return assertUsableApiKey(hit, 'newapi-studio', ref);
+    return assertUsableApiKey(hit, 'newapi-provider', ref);
   };
 
   const modelsDev = new ModelsDev({ enabled: current().useModelsDev !== false, logger: ctx.logger });
@@ -173,7 +173,7 @@ export function apply(ctx, config) {
     } catch (error) {
       const stale = catalogs.peek(conn);
       if (stale) return stale;
-      throw new LlmError(redact(`newapi-studio: cannot read the model list from ${gatewayRoot(conn.baseURL)}: ${error.message}`, apiKey), error.code === 'AUTH' ? 'AUTH' : 'TRANSPORT', { cause: error });
+      throw new LlmError(redact(`newapi-provider: cannot read the model list from ${gatewayRoot(conn.baseURL)}: ${error.message}`, apiKey), error.code === 'AUTH' ? 'AUTH' : 'TRANSPORT', { cause: error });
     }
   };
 
@@ -243,7 +243,7 @@ export function apply(ctx, config) {
       Object.assign(routeState, { status: 'registered', route: conn.providerId, error: null });
     } catch (error) {
       Object.assign(routeState, { status: 'waiting', route: conn.providerId, error: String(error?.message ?? error) });
-      ctx.logger.warn(`newapi-studio: provider route "${conn.providerId}" is not available yet (${error.code ?? error.message}); will retry when it is released`);
+      ctx.logger.warn(`newapi-provider: provider route "${conn.providerId}" is not available yet (${error.code ?? error.message}); will retry when it is released`);
     }
   };
   ensureRegistration();
@@ -484,7 +484,7 @@ export function apply(ctx, config) {
       balance: services.get(c.id).state,
     })));
     return {
-      plugin: 'dsh-newapi-studio',
+      plugin: 'dsh-newapi-provider',
       revision,
       channels: list,
       activeChannel: state.active.id,

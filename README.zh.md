@@ -1,4 +1,4 @@
-# New API Studio
+# New API Provider
 
 [English](README.md) · 中文
 
@@ -17,9 +17,17 @@ DeepSeek Harness 的 New API 渠道与模型工作台。**开发中，尚未发�
 
 目前验证环境为 DSH **0.2.1-rc.2**，Node.js 22.19 或以上；Web 与 Desktop 配置页通过 DSH 原生插槽显示。不需要单独启动网页服务器。
 
-通过 DSH 的插件管理工具安装本地项目目录。安装后刷新现有 DSH 页面，打开「设置 → New API 工作室」。未发布到 npm 前不要直接执行 `npm install dsh-newapi-studio`。
+通过 DSH 的插件管理工具安装本地项目目录。安装后刷新现有 DSH 页面，打开「设置 → New API 提供商」。未发布到 npm 前不要直接执行 `npm install dsh-newapi-provider`。
 
-本插件不依赖 `dsh-gateway-provider`。若需要保留旧会话的 provider 名称，可使用相同的 `providerId`，但不能让两个适配器占用同一路由。当前开发安装保留独立的 `newapi-studio` 路由。
+本插件不依赖 `dsh-gateway-provider`。若需要保留旧会话的 provider 名称，可使用相同的 `providerId`，但不能让两个适配器占用同一路由。当前开发安装保留独立的 `newapi-provider` 路由。
+
+## 从旧开发名称迁移（v0.7.0）
+
+旧名称为 `dsh-newapi-studio`。此版本统一改为 `dsh-newapi-provider`：配置行与模型路由为 `newapi-provider`，HTTP 接口为 `/newapi-provider/api/`，数据目录为 `plugin-data/dsh-newapi-provider`。
+
+已有安装迁移时需先备份配置和数据，再保留各渠道的 ID、凭据引用、模型清单及覆盖参数，将旧数据目录迁移至新名称。不要直接新装后丢弃旧配置；本版本不自动从旧目录读取。既有凭据引用即使含有 `STUDIO` 也应保留，新建引用使用 `NEWAPI_PROVIDER_` 前缀，无需复制令牌。
+
+使用旧 `newapi-studio` 路由的会话需要重新选择新路由下的模型；其他适配器不受影响。工具名 `newapi_channels`、`newapi_models` 等保持不变。
 
 ## 渠道管理
 

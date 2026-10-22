@@ -1,13 +1,13 @@
-/** New API Studio: native, theme-aware settings with one active gateway. */
+/** New API Provider: native, theme-aware settings with one active gateway. */
 window.__ModuleLoader__.load({
-  id: 'dsh-newapi-studio',
+  id: 'dsh-newapi-provider',
   factory(require) {
     const React = require('react');
     const h = React.createElement;
     const { useState, useEffect, useRef, useId } = React;
-    const NS = 'newapi-studio-ui';
+    const NS = 'newapi-provider-ui';
     const ZH = {
-      nav: 'New API 工作室', title: 'New API Studio', subtitle: '管理你的模型网关、额度与生成能力。',
+      nav: 'New API 提供商', title: 'New API Provider', subtitle: '管理你的模型网关、额度与生成能力。',
       refresh: '同步数据', refreshing: '同步中…', add: '添加渠道', channels: '渠道与连接', models: '模型能力', media: '生成记录',
       channelHint: '同一时间只激活一个渠道，模型、额度和生成工具随之切换；已提交的视频任务仍由原渠道处理。', activateShort: '激活', activeTip: '当前激活的渠道', inactiveTip: '未激活的渠道', healthOk: '连接正常，额度已同步',
       healthNoKey: '尚未设置令牌', healthBad: '连接异常', healthStale: '额度数据已过期', healthUnknown: '尚未检测',
@@ -80,7 +80,7 @@ window.__ModuleLoader__.load({
       code_AUTH: '令牌无效或无权限', code_NO_CHANNEL: '网关没有可用渠道', code_RATE_LIMIT: '请求过于频繁', code_TIMEOUT: '超时', code_UNREACHABLE: '无法连接网关', code_HTTP: '请求失败',
     };
     const EN = {
-      nav: 'New API Studio', title: 'New API Studio', subtitle: 'Your model gateways, quota and creative tools, in one place.',
+      nav: 'New API Provider', title: 'New API Provider', subtitle: 'Your model gateways, quota and creative tools, in one place.',
       refresh: 'Sync data', refreshing: 'Syncing…', add: 'Add gateway', channels: 'Gateways', models: 'Model capabilities', media: 'Generations',
       channelHint: 'One gateway is active at a time; models, balance and generation tools follow it. Submitted videos stay on their original gateway.', activateShort: 'Activate', activeTip: 'Active gateway', inactiveTip: 'Not active', healthOk: 'Connected; quota is up to date',
       healthNoKey: 'No token stored yet', healthBad: 'Connection problem', healthStale: 'Quota data is stale', healthUnknown: 'Not checked yet',
@@ -329,7 +329,7 @@ window.__ModuleLoader__.load({
       const u = new URL(document.baseURI);
       u.search = ''; u.hash = '';
       if (!u.pathname.endsWith('/')) u.pathname += '/';
-      return new URL(`newapi-studio/api/${path}`, u).href;
+      return new URL(`newapi-provider/api/${path}`, u).href;
     }
     async function api(path, body, signal) {
       const response = await fetch(apiUrl(path), {
@@ -374,7 +374,7 @@ window.__ModuleLoader__.load({
       },
       dispose() { clearInterval(this.timer); this.controller?.abort(); this.listeners.clear(); },
     };
-    function useStudio() {
+    function useProvider() {
       const [, set] = useState(0);
       useEffect(() => store.subscribe(() => set((n) => n + 1)), []);
       return { state: store.state, error: store.error, busy: store.busy };
@@ -926,14 +926,14 @@ window.__ModuleLoader__.load({
         ])) : h(Empty, { title: t('generationEmpty'), detail: t('generationHint'), icon: 'image' }));
     }
     function SettingsPage() {
-      const t = useT(); const { state, error, busy } = useStudio(); const a = useAction();
+      const t = useT(); const { state, error, busy } = useProvider(); const a = useAction();
       const [tab, setTab] = useState('channels'); const [editor, setEditor] = useState(); const [modelEditor, setModelEditor] = useState(); const [notice, setNotice] = useState('');
       const [modelChannelId, setModelChannelId] = useState(null);
       const notify = (key) => { setNotice(t(key)); setEditor(undefined); setModelEditor(undefined); };
       useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 5000); return () => clearTimeout(timer); }, [notice]);
       const sync = () => a.run(() => store.mutate('refresh', {}));
       const header = h('header', { className: 'nas-head' },
-        h('div', null, h('div', { className: 'nas-eyebrow' }, h(Icon, { name: 'gateway', size: 12 }), 'NEW API / STUDIO'), h('h2', null, t('title')), h('div', { className: 'nas-sub' }, t('subtitle'))),
+        h('div', null, h('div', { className: 'nas-eyebrow' }, h(Icon, { name: 'gateway', size: 12 }), 'NEW API / PROVIDER'), h('h2', null, t('title')), h('div', { className: 'nas-sub' }, t('subtitle'))),
         h('div', { className: 'nas-actions' }, h(Button, { icon: 'refresh', onClick: sync, disabled: busy, 'aria-busy': busy }, t(busy ? 'refreshing' : 'refresh')),
           h(Button, { icon: 'plus', tone: 'primary', onClick: () => setEditor({ channel: null, revision: state.revision }), disabled: busy || !state }, t('add'))));
       if (!state) return h('div', { className: 'nas nas-page' }, h(Styles), header, h(Empty, {
@@ -948,7 +948,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-studio-version': '0.6.0' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.0' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },
@@ -983,12 +983,12 @@ window.__ModuleLoader__.load({
             })),
           tab === 'media' && h(Gallery, { media: state.media })),
         state.errors && Object.keys(state.errors).length > 0 && h('details', { style: { marginTop: 18 } }, h('summary', { className: 'nas-sub', style: { cursor: 'pointer' } }, t('issues')), Object.entries(state.errors).map(([key, v]) => h('div', { key, className: 'nas-note' }, `${key}: ${v.message}`))),
-        h('footer', { className: 'nas-settings-foot' }, h('span', null, `${t('route')}: ${state.route?.route || 'newapi-studio'} · ${state.modelsDev?.loaded ? `models.dev ${t('cached')}` : t('originNone')}`), h('span', null, h(Icon, { name: 'key', size: 11 }), ` ${t('privacy')}`)),
+        h('footer', { className: 'nas-settings-foot' }, h('span', null, `${t('route')}: ${state.route?.route || 'newapi-provider'} · ${state.modelsDev?.loaded ? `models.dev ${t('cached')}` : t('originNone')}`), h('span', null, h(Icon, { name: 'key', size: 11 }), ` ${t('privacy')}`)),
         editor && h(ChannelEditor, { ...editor, onClose: () => setEditor(undefined), onSaved: () => notify('saved') }),
         modelEditor && h(ModelEditor, { ...modelEditor, onClose: () => setModelEditor(undefined), onSaved: (reset) => notify(reset ? 'modelReset' : 'modelSaved') }));
     }
     function BalancePill() {
-      const t = useT(); const { state, error, busy } = useStudio(); const a = useAction();
+      const t = useT(); const { state, error, busy } = useProvider(); const a = useAction();
       const active = state?.channels?.find((c) => c.id === state.activeChannel);
       const b = active?.balance || state?.balance; const q = quota(b);
       return h('span', { className: 'nas', style: { width: 'auto' } }, h(Styles),
@@ -1000,7 +1000,7 @@ window.__ModuleLoader__.load({
     function resultValue(props) { const b = props.phase === 'result' ? props.block : undefined; return b?.value ?? b?.result?.value ?? b?.output; }
     function toolArgs(props) { try { const a = props.block?.args ?? props.block?.arguments; return typeof a === 'string' ? JSON.parse(a) : (typeof a === 'function' ? a() : a) || {}; } catch { return {}; } }
     function MediaToolCard(props) {
-      const t = useT(); const { state } = useStudio(); const a = toolArgs(props); const value = resultValue(props);
+      const t = useT(); const { state } = useProvider(); const a = toolArgs(props); const value = resultValue(props);
       const isImage = props.mediaKind === 'image';
       const task = value?.taskId ? state?.media?.tasks?.find((x) => x.taskId === value.taskId) : null;
       const media = task ? state?.media?.history?.find((x) => x.taskId === task.taskId && x.file) : null;
@@ -1023,10 +1023,10 @@ window.__ModuleLoader__.load({
         ctx.effect(() => ctx.locale.register(NS, 'zh', stringsOnly(ZH)));
         translate = ctx.locale.bind(NS);
         ctx.effect(() => () => { store.dispose(); locale = undefined; translate = undefined; });
-        ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register({ name: 'conversation.composer.dock', id: 'newapi-studio-balance', order: 40 }, BalancePill));
+        ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register({ name: 'conversation.composer.dock', id: 'newapi-provider-balance', order: 40 }, BalancePill));
         ctx.slots.inject('settings.section', () => {
           let dispose;
-          const register = () => { dispose?.(); dispose = ctx.slots.register({ name: 'settings.section', id: 'newapi-studio', order: 19, label: translate('nav') }, SettingsPage); };
+          const register = () => { dispose?.(); dispose = ctx.slots.register({ name: 'settings.section', id: 'newapi-provider', order: 19, label: translate('nav') }, SettingsPage); };
           register(); const un = ctx.locale.subscribe(register);
           return () => { un(); dispose?.(); };
         });
