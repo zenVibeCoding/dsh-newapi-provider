@@ -49,8 +49,9 @@ window.__ModuleLoader__.load({
       modelEmpty: '没有匹配的模型', noModels: '当前渠道暂无模型目录', hidden: '已隐藏', modelEdit: '编辑模型参数', modelEditHint: '只影响此渠道的该模型；不会修改 New API 站点。',
       kind: '模型类型', displayName: '显示名称', inputModalities: '输入能力', inputHint: 'DSH 对话层支持文本与图片；PDF、音视频标签仅用于展示，不能直接作为对话输入。',
       reasoningLevels: '推理等级', reasoningLevelsMode: '推理等级模式',
-      levelsAutoHint: '跟随模型自动识别。不同厂商档位不同：Claude 到 max，GPT-5.1+ 有 none/xhigh，Gemini 3 不能关闭。打开开关可自定义。',
-      levelsCustomHint: '左侧是对话选择器里的档位，右侧是发给网关的参数值；留空表示该档位不发送参数（常用于 off）。',
+      levelsAutoHint: '已关闭自定义，按模型自动识别的档位发送；打开开关可以逐个修改。',
+      levelsCustomHint: '下面是从模型数据预填的档位。左侧决定对话里可选什么，右侧是发给网关的参数值；留空表示不发送参数（常用于 off）。不改动就保持跟随模型。',
+      levelsOffered: '将提供',
       levelsRequired: '至少保留一个档位', level_off: 'off', level_minimal: 'minimal', level_low: 'low', level_medium: 'medium', level_high: 'high', level_xhigh: 'xhigh', level_max: 'max',
       levelColumn: '档位', apiValueColumn: 'API 参数值', apiValuePlaceholder: '留空则不发送',
       addLevel: '添加档位', removeLevel: '移除该档位',
@@ -135,8 +136,9 @@ window.__ModuleLoader__.load({
       modelEmpty: 'No matching models', noModels: 'No model catalog for this gateway', hidden: 'Hidden', modelEdit: 'Edit model', modelEditHint: 'Changes this model on this gateway only, not the New API site.',
       kind: 'Model kind', displayName: 'Display name', inputModalities: 'Input capabilities', inputHint: 'DSH chat accepts text and image. PDF, video and audio tags are informational only.',
       reasoningLevels: 'Thinking levels', reasoningLevelsMode: 'Thinking level mode',
-      levelsAutoHint: 'Detected per model: vendors differ — Gemini 3 offers low/high only, DeepSeek low/high/max, Claude includes max.',
-      levelsCustomHint: 'Customised: these replace the detected set, and only the levels you pick appear in the chat selector.',
+      levelsAutoHint: 'Customisation is off: the levels detected for this model are sent as-is. Turn the switch on to edit them.',
+      levelsCustomHint: 'Pre-filled from the model data. The left column decides what the chat selector offers, the right column is the value sent upstream; empty sends nothing (common for off). Leave it untouched to keep following the model.',
+      levelsOffered: 'Offers',
       levelsRequired: 'Pick at least one thinking level', level_off: 'off', level_minimal: 'minimal', level_low: 'low', level_medium: 'medium', level_high: 'high', level_xhigh: 'xhigh', level_max: 'max',
       levelColumn: 'Level', apiValueColumn: 'API value', apiValuePlaceholder: 'Empty sends nothing',
       addLevel: 'Add level', removeLevel: 'Remove level',
@@ -630,7 +632,7 @@ window.__ModuleLoader__.load({
             className: `nas-switch ${enabled ? 'on' : ''}`, disabled: busy, onClick: onToggle,
           }, h('i'))),
         h('div', { className: 'nas-sub' }, enabled ? t('levelsCustomHint') : t('levelsAutoHint')),
-        !enabled && h('div', { className: 'nas-chips readonly', lang: 'en' }, detected.map((level) => h('span', { key: level, className: 'nas-chip on' }, level))),
+        !enabled && h('div', { className: 'nas-levels-summary', lang: 'en' }, `${t('levelsOffered')}: ${detected.join(' / ') || '—'}`),
         enabled && h(React.Fragment, null,
           h('div', { className: 'nas-levels-table' },
             h('div', { className: 'nas-levels-row head' },
@@ -670,6 +672,14 @@ window.__ModuleLoader__.load({
       for (const row of rows) map[row.level] = row.value.trim() ? row.value.trim() : null;
       return map;
     }
+    /** True when two level maps say the same thing (null and absent both mean "hidden"). */
+    function sameLevelMap(a, b) {
+      const read = (map, level) => {
+        const value = map ? map[level] : undefined;
+        return typeof value === 'string' ? value : null;
+      };
+      return LEVELS.every((level) => read(a, level) === read(b, level));
+    }
     /** Wire value a level usually needs when the user adds it by hand. */
     function defaultWireFor(level) {
       return level === 'off' ? '' : level;
@@ -686,7 +696,7 @@ window.__ModuleLoader__.load({
         inputMode: Array.isArray(initial.input) ? 'custom' : 'auto',
         input: [...(initial.input ?? automaticInput)],
         reasoningMode: initial.reasoning == null ? 'auto' : initial.reasoning ? 'on' : 'off',
-        levelsMode: initial.thinkingLevelMap && Object.keys(initial.thinkingLevelMap).length ? 'custom' : 'auto',
+        levelsMode: 'custom',
         // Custom rows: level id plus the wire value it sends ('' means "no value", i.e. off/none).
         rows: rowsFromMap(initial.thinkingLevelMap, model.automaticReasoningLevels, model.automaticThinkingLevelMap),
         hidden: Boolean(initial.hidden),
@@ -708,9 +718,12 @@ window.__ModuleLoader__.load({
         }
         override.input = form.inputMode === 'auto' ? null : form.input;
         override.reasoning = form.reasoningMode === 'auto' ? null : form.reasoningMode === 'on';
-        // null keeps the detected levels; a custom table is sent as the level→wire map.
+        // A table that still matches what the model declares is not an override: keeping it
+        // null means the levels keep following pi-ai's data instead of freezing today's copy.
         override.reasoningLevels = null;
-        override.thinkingLevelMap = form.levelsMode === 'auto' ? null : rowsToMap(form.rows);
+        const edited = rowsToMap(form.rows);
+        const detected = model.automaticThinkingLevelMap;
+        override.thinkingLevelMap = sameLevelMap(edited, detected) ? null : edited;
         override.hidden = form.hidden ? true : null;
         return a.run(async () => { await store.mutate('model/override', { revision, channelId: channel.id, modelId: model.id, override }); onSaved(false); });
       };
@@ -1206,7 +1219,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.1' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.2' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },

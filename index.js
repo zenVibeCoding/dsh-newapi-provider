@@ -463,9 +463,10 @@ export function apply(ctx, config) {
       fetchedAt: value.fetchedAt,
       pricingAvailable: value.pricingAvailable,
       pricingError: value.pricingError,
-      entries: value.entries.map(({ thinkingLevelMap, ...e }) => ({   // the map is wire detail, not UI state
+      entries: value.entries.map(({ thinkingLevelMap, ...e }) => ({   // the map is wire detail; the UI gets the same data under its own name
         ...e,
         // Own-property read: built-in names such as `toString` are legal model ids.
+        automaticThinkingLevelMap: thinkingLevelMap ?? null,
         override: structuredClone(Object.hasOwn(captured.models ?? {}, e.id) ? captured.models[e.id] : {}),
         automaticContextWindow: e.automaticContextWindow ?? conn.defaultContextWindow,
         automaticMaxTokens: e.automaticMaxTokens ?? conn.defaultMaxTokens,

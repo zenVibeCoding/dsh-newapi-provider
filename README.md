@@ -103,7 +103,7 @@ Vendors do not agree on reasoning levels, so each model resolves its own set ins
 
 Resolution order: **your override → pi-ai's shipped model data (same model, same behaviour as the built-in provider) → vendor-family default**.
 
-**Model capabilities → Edit model → Thinking levels** has a switch that turns on a custom table: the left column is the level shown in the chat selector (always English: off/minimal/low/medium/high/xhigh/max), the right column is the value sent upstream for it, and an empty value sends nothing. The mapping is stored per model per gateway and affects only this plugin.
+**Model capabilities → Edit model → Thinking levels** opens on a table pre-filled from the model data (turn the switch off to see the detected set read-only): the left column is the level shown in the chat selector (always English: off/minimal/low/medium/high/xhigh/max), the right column is the value sent upstream for it, and an empty value sends nothing. The mapping is stored per model per gateway and affects only this plugin.
 
 > Limitation: relays rename models (`claude-opus-5-5`), so a family guess fills the gap when the exact id is unknown. Use a custom override if the upstream disagrees. A level only changes the request; whether the upstream honours that depth is up to it.
 
