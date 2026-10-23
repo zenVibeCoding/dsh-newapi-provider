@@ -45,6 +45,8 @@ const ModelOverride = z.object({
   input: z.array(z.union(MODALITIES)).default(undefined).description('Input modalities the model accepts.'),
   reasoning: z.boolean().description('Whether the model supports reasoning effort.'),
   reasoningLevels: z.array(z.union(LEVELS)).default(undefined).description('Reasoning effort levels to offer.'),
+  thinkingLevelMap: z.dict(z.union([z.string(), z.const(null)])).default(undefined)
+    .description('Per-level wire value: a string is sent upstream, null hides the level. Omitted levels fall back to the detected value.'),
   protocol: z.union(ENDPOINT_TYPES).description('Force the wire protocol for this model.'),
   custom: z.boolean().description('Add this model even if the gateway does not list it.'),
 });

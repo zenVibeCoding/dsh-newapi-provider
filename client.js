@@ -48,10 +48,13 @@ window.__ModuleLoader__.load({
       reasoning: '推理', noReasoning: '未声明推理', auto: '自动识别', overridden: '已自定义', defaults: '默认值',
       modelEmpty: '没有匹配的模型', noModels: '当前渠道暂无模型目录', hidden: '已隐藏', modelEdit: '编辑模型参数', modelEditHint: '只影响此渠道的该模型；不会修改 New API 站点。',
       kind: '模型类型', displayName: '显示名称', inputModalities: '输入能力', inputHint: 'DSH 对话层支持文本与图片；PDF、音视频标签仅用于展示，不能直接作为对话输入。',
-      reasoningLevels: '思考等级', reasoningLevelsMode: '思考等级模式',
-      levelsAutoHint: '按模型自动识别：不同厂商支持的等级不同，例如 Gemini 3 只有低/高，DeepSeek 有低/高/最高，Claude 支持最高档。',
-      levelsCustomHint: '已自定义：这里的选项会覆盖自动识别，只有你勾选的等级会出现在对话选择器里。',
-      levelsRequired: '至少勾选一个思考等级', level_off: '关闭', level_minimal: '最少', level_low: '低', level_medium: '中', level_high: '高', level_xhigh: '很高', level_max: '最高',
+      reasoningLevels: '推理等级', reasoningLevelsMode: '推理等级模式',
+      levelsAutoHint: '跟随模型自动识别。不同厂商档位不同：Claude 到 max，GPT-5.1+ 有 none/xhigh，Gemini 3 不能关闭。打开开关可自定义。',
+      levelsCustomHint: '左侧是对话选择器里的档位，右侧是发给网关的参数值；留空表示该档位不发送参数（常用于 off）。',
+      levelsRequired: '至少保留一个档位', level_off: 'off', level_minimal: 'minimal', level_low: 'low', level_medium: 'medium', level_high: 'high', level_xhigh: 'xhigh', level_max: 'max',
+      levelColumn: '档位', apiValueColumn: 'API 参数值', apiValuePlaceholder: '留空则不发送',
+      addLevel: '添加档位', removeLevel: '移除该档位',
+      levelsHelp: '不同厂商的推理档位并不相同：这里决定对话里可选哪些档位，以及每个档位发给网关的参数值。关闭开关则跟随模型自动识别。',
       reasoningEnabled: '声明支持推理', hideModel: '隐藏该模型', modelSave: '保存参数', reset: '恢复自动识别',
       resetHint: '清除此渠道中该模型的全部自定义参数。', modelSaved: '模型参数已更新', modelReset: '已恢复自动识别',
       inherited: '留空使用自动识别或默认值', positiveInteger: '请输入大于 0 的整数',
@@ -134,7 +137,10 @@ window.__ModuleLoader__.load({
       reasoningLevels: 'Thinking levels', reasoningLevelsMode: 'Thinking level mode',
       levelsAutoHint: 'Detected per model: vendors differ — Gemini 3 offers low/high only, DeepSeek low/high/max, Claude includes max.',
       levelsCustomHint: 'Customised: these replace the detected set, and only the levels you pick appear in the chat selector.',
-      levelsRequired: 'Pick at least one thinking level', level_off: 'Off', level_minimal: 'Minimal', level_low: 'Low', level_medium: 'Medium', level_high: 'High', level_xhigh: 'Extra high', level_max: 'Max',
+      levelsRequired: 'Pick at least one thinking level', level_off: 'off', level_minimal: 'minimal', level_low: 'low', level_medium: 'medium', level_high: 'high', level_xhigh: 'xhigh', level_max: 'max',
+      levelColumn: 'Level', apiValueColumn: 'API value', apiValuePlaceholder: 'Empty sends nothing',
+      addLevel: 'Add level', removeLevel: 'Remove level',
+      levelsHelp: 'Vendors differ: this decides which levels the chat selector offers and what each one sends upstream. Leave the switch off to follow the detected set.',
       reasoningEnabled: 'Declare reasoning support', hideModel: 'Hide model', modelSave: 'Save parameters', reset: 'Use automatic values',
       resetHint: 'Removes all overrides for this model on this gateway.', modelSaved: 'Model parameters updated', modelReset: 'Automatic values restored',
       inherited: 'Leave empty for automatic or default values', positiveInteger: 'Enter a positive integer',
@@ -387,6 +393,27 @@ window.__ModuleLoader__.load({
       .nas-chips button[aria-pressed=true]{border-color:var(--nas-brand);background:color-mix(in srgb,var(--nas-accent) 7%,transparent);font-weight:550}
       .nas-chips.readonly .nas-chip{cursor:default;color:var(--nas-sub)}
       .nas-chips.readonly .nas-chip.on{color:var(--nas-text);border-color:var(--nas-line-strong,var(--nas-line))}
+      /* Reasoning levels: switch + level/value table, mirroring the editor rows. */
+      .nas-levels{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding:12px 13px;border:1px solid var(--nas-line);border-radius:10px;background:var(--nas-raised)}
+      .nas-levels-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+      .nas-levels-title{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:550}
+      .nas-help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid var(--nas-line-strong,var(--nas-line));border-radius:50%;font-size:10px;color:var(--nas-sub);cursor:help}
+      .nas-switch{position:relative;flex-shrink:0;width:38px;height:22px;border:1px solid var(--nas-line);border-radius:999px;background:var(--nas-line);cursor:pointer;transition:background .15s,border-color .15s}
+      .nas-switch>i{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+      .nas-switch.on{background:var(--nas-brand);border-color:var(--nas-brand)}
+      .nas-switch.on>i{transform:translateX(16px)}
+      .nas-switch:disabled{opacity:.5;cursor:default}
+      .nas-levels-table{display:flex;flex-direction:column;gap:8px}
+      .nas-levels-row{display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 26px;align-items:center;gap:10px}
+      .nas-levels-row.head{font-size:11px;color:var(--nas-sub);padding:0 1px}
+      .nas-levels-row select,.nas-levels-row input{width:100%;min-width:0;border:1px solid var(--nas-line);border-radius:8px;background:var(--dsw-alias-bg-base);color:var(--nas-text);padding:6px 9px;font-size:12.5px;font-family:inherit}
+      .nas-levels-row select:focus-visible,.nas-levels-row input:focus-visible{outline:2px solid var(--nas-brand);outline-offset:1px}
+      .nas-levels-remove{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--nas-sub);cursor:pointer}
+      .nas-levels-remove:hover:not(:disabled){color:var(--dsw-alias-state-error-primary);border-color:var(--nas-line)}
+      .nas-levels-remove:disabled{opacity:.35;cursor:default}
+      .nas-levels-add{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;border:1px solid var(--nas-line);border-radius:8px;background:var(--dsw-alias-bg-base);color:var(--nas-text);padding:6px 10px;font-size:12px;cursor:pointer}
+      .nas-levels-add:hover:not(:disabled){border-color:var(--nas-brand)}
+      .nas-levels-add:disabled{opacity:.5;cursor:default}
       /* Tooltips: instant, themed, keyboard accessible. */
       .nas [data-tip]{position:relative}
       .nas [data-tip]::after{content:attr(data-tip);position:absolute;z-index:60;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);width:max-content;max-width:270px;padding:6px 9px;border-radius:7px;border:1px solid var(--nas-line);background:var(--dsw-alias-bg-overlay);color:var(--nas-text);font-size:11px;font-weight:400;line-height:1.55;text-align:left;white-space:pre-line;box-shadow:0 8px 24px color-mix(in srgb,var(--dsw-alias-label-primary) 16%,transparent);opacity:0;pointer-events:none;transition:opacity .12s}
@@ -585,6 +612,68 @@ window.__ModuleLoader__.load({
             : h('div', { className: 'nas-test-error' }, tested.error))
           : h('div', { className: 'nas-note', style: { marginTop: 14 } }, h(Icon, { name: 'info', size: 13 }), t('testHint'))));
     }
+    /**
+     * Reasoning levels: a switch plus a level→wire-value table.
+     * Off = follow what the model declares; on = the table is exactly what ships.
+     */
+    function ReasoningLevelsEditor({ enabled, rows, detected, busy, onToggle, onChange }) {
+      const t = useT();
+      const setRow = (index, patch) => onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+      const add = () => onChange([...rows, { level: LEVELS[0], value: '' }]);
+      return h('div', { className: 'nas-levels' },
+        h('div', { className: 'nas-levels-head' },
+          h('div', { className: 'nas-levels-title' },
+            h('span', null, t('reasoningLevels')),
+            h('span', { className: 'nas-help', role: 'img', 'aria-label': t('levelsHelp'), 'data-tip': t('levelsHelp'), 'data-tip-align': 'start' }, '?')),
+          h('button', {
+            type: 'button', role: 'switch', 'aria-checked': enabled, 'aria-label': t('reasoningLevelsMode'),
+            className: `nas-switch ${enabled ? 'on' : ''}`, disabled: busy, onClick: onToggle,
+          }, h('i'))),
+        h('div', { className: 'nas-sub' }, enabled ? t('levelsCustomHint') : t('levelsAutoHint')),
+        !enabled && h('div', { className: 'nas-chips readonly', lang: 'en' }, detected.map((level) => h('span', { key: level, className: 'nas-chip on' }, level))),
+        enabled && h(React.Fragment, null,
+          h('div', { className: 'nas-levels-table' },
+            h('div', { className: 'nas-levels-row head' },
+              h('span', null, t('levelColumn')), h('span', null, t('apiValueColumn')), h('span', { 'aria-hidden': true })),
+            rows.map((row, index) => h('div', { className: 'nas-levels-row', key: `${row.level}-${index}` },
+              h('select', {
+                value: row.level, disabled: busy, lang: 'en', 'aria-label': t('levelColumn'),
+                onChange: (e) => setRow(index, { level: e.target.value }),
+              }, LEVELS.map((level) => h('option', {
+                key: level, value: level, lang: 'en',
+                disabled: level !== row.level && rows.some((other) => other.level === level),
+              }, level))),
+              h('input', {
+                value: row.value, disabled: busy, lang: 'en', spellCheck: false, placeholder: t('apiValuePlaceholder'),
+                'aria-label': t('apiValueColumn'), onChange: (e) => setRow(index, { value: e.target.value }),
+              }),
+              h('button', {
+                type: 'button', className: 'nas-levels-remove', disabled: busy || rows.length <= 1,
+                'aria-label': t('removeLevel'), 'data-tip': t('removeLevel'), 'data-tip-align': 'end',
+                onClick: () => onChange(rows.filter((_, i) => i !== index)),
+              }, h(Icon, { name: 'trash', size: 13 })))),
+          h('button', { type: 'button', className: 'nas-levels-add', disabled: busy || rows.length >= LEVELS.length, onClick: add },
+            h(Icon, { name: 'plus', size: 13 }), t('addLevel')),
+          !rows.length && h('span', { className: 'nas-field-error' }, t('levelsRequired')))));
+    }
+    /** Level→wire map to editable rows; falls back to the detected set when nothing is pinned. */
+    function rowsFromMap(map, detectedLevels, detectedMap) {
+      if (map && Object.keys(map).length) {
+        return LEVELS.filter((l) => typeof map[l] === 'string').map((l) => ({ level: l, value: map[l] }));
+      }
+      const levels = detectedLevels ?? [];
+      return levels.map((l) => ({ level: l, value: (detectedMap && typeof detectedMap[l] === 'string') ? detectedMap[l] : defaultWireFor(l) }));
+    }
+    /** Rows to the override map. A blank value means "this level sends nothing" (e.g. off). */
+    function rowsToMap(rows) {
+      const map = {};
+      for (const row of rows) map[row.level] = row.value.trim() ? row.value.trim() : null;
+      return map;
+    }
+    /** Wire value a level usually needs when the user adds it by hand. */
+    function defaultWireFor(level) {
+      return level === 'off' ? '' : level;
+    }
     function ModelEditor({ model, channel, revision, siblings = [], onClose, onSaved }) {
       const t = useT(); const id = useId(); const a = useAction();
       const initial = model.override || {};
@@ -597,8 +686,9 @@ window.__ModuleLoader__.load({
         inputMode: Array.isArray(initial.input) ? 'custom' : 'auto',
         input: [...(initial.input ?? automaticInput)],
         reasoningMode: initial.reasoning == null ? 'auto' : initial.reasoning ? 'on' : 'off',
-        levelsMode: Array.isArray(initial.reasoningLevels) && initial.reasoningLevels.length ? 'custom' : 'auto',
-        levels: [...(initial.reasoningLevels ?? model.automaticReasoningLevels ?? [])],
+        levelsMode: initial.thinkingLevelMap && Object.keys(initial.thinkingLevelMap).length ? 'custom' : 'auto',
+        // Custom rows: level id plus the wire value it sends ('' means "no value", i.e. off/none).
+        rows: rowsFromMap(initial.thinkingLevelMap, model.automaticReasoningLevels, model.automaticThinkingLevelMap),
         hidden: Boolean(initial.hidden),
       });
       const original = useRef(JSON.stringify(form)); const dirty = original.current !== JSON.stringify(form);
@@ -618,8 +708,9 @@ window.__ModuleLoader__.load({
         }
         override.input = form.inputMode === 'auto' ? null : form.input;
         override.reasoning = form.reasoningMode === 'auto' ? null : form.reasoningMode === 'on';
-        // null keeps the resolved default; an explicit array pins the selector.
-        override.reasoningLevels = form.levelsMode === 'auto' ? null : form.levels;
+        // null keeps the detected levels; a custom table is sent as the level→wire map.
+        override.reasoningLevels = null;
+        override.thinkingLevelMap = form.levelsMode === 'auto' ? null : rowsToMap(form.rows);
         override.hidden = form.hidden ? true : null;
         return a.run(async () => { await store.mutate('model/override', { revision, channelId: channel.id, modelId: model.id, override }); onSaved(false); });
       };
@@ -658,19 +749,14 @@ window.__ModuleLoader__.load({
           h('div', { className: 'nas-note', style: { marginTop: 8, marginBottom: 16 } }, t('inputHint')),
           h(Field, { label: t('reasoning'), htmlFor: `${id}-reasoning` }, h('select', { id: `${id}-reasoning`, value: form.reasoningMode, onChange: changed('reasoningMode'), disabled: a.pending },
             h('option', { value: 'auto' }, `${t('followAuto')} · ${t((model.automaticReasoning ?? model.reasoning) ? 'enableReasoning' : 'disableReasoning')}`), h('option', { value: 'on' }, t('enableReasoning')), h('option', { value: 'off' }, t('disableReasoning')))),
-          (form.reasoningMode !== 'off') && h(Field, { label: t('reasoningLevels'), hint: t(initial.reasoningLevels?.length ? 'levelsCustomHint' : 'levelsAutoHint') },
-            h('div', { className: 'nas-mode', role: 'group', 'aria-label': t('reasoningLevelsMode') },
-              h('button', { type: 'button', 'aria-pressed': form.levelsMode === 'auto', disabled: a.pending, onClick: () => setForm({ ...form, levelsMode: 'auto' }) }, t('automaticMode')),
-              h('button', { type: 'button', 'aria-pressed': form.levelsMode === 'custom', disabled: a.pending, onClick: () => setForm({ ...form, levelsMode: 'custom', levels: form.levels.length ? form.levels : [...(model.automaticReasoningLevels ?? ['low', 'medium', 'high']) ] }) }, t('customMode'))),
-            form.levelsMode === 'auto'
-              ? h('div', { className: 'nas-chips readonly' }, (model.automaticReasoningLevels ?? []).map((l) => h('span', { key: l, className: 'nas-chip on' }, t('level_' + l))))
-              : h('div', { className: 'nas-chips' }, LEVELS.map((l) => {
-                const on = form.levels.includes(l);
-                return h('button', { key: l, type: 'button', 'aria-pressed': on, disabled: a.pending,
-                  onClick: () => setForm({ ...form, levels: on ? form.levels.filter((x) => x !== l) : LEVELS.filter((x) => x === l || form.levels.includes(x)) }) },
-                  on && h(Icon, { name: 'check', size: 11 }), t('level_' + l));
-              })),
-            form.levelsMode === 'custom' && !form.levels.length && h('span', { className: 'nas-field-error' }, t('levelsRequired')))),
+          (form.reasoningMode !== 'off') && h(ReasoningLevelsEditor, {
+            enabled: form.levelsMode === 'custom',
+            rows: form.rows,
+            detected: model.automaticReasoningLevels ?? [],
+            busy: a.pending,
+            onToggle: () => setForm({ ...form, levelsMode: form.levelsMode === 'custom' ? 'auto' : 'custom' }),
+            onChange: (rows) => setForm({ ...form, rows }),
+          })),
         h('details', { className: 'nas-editor-advanced' }, h('summary', null, t('advancedOptions')),
           h('div', { className: 'nas-two' },
             h(Field, { label: t('kind'), htmlFor: `${id}-kind` }, h('select', { id: `${id}-kind`, value: form.kind, onChange: changed('kind'), disabled: a.pending }, h('option', { value: '' }, t('auto')), ['chat', 'image', 'video', 'audio', 'embedding', 'other'].map((k) => h('option', { key: k, value: k }, t(k))))),
@@ -1120,7 +1206,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.0' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.1' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },

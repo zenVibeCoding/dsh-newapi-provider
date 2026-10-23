@@ -104,3 +104,18 @@ test('one relay gateway produces different level sets per model', async () => {
     assert.deepEqual(levelsFromMap(entry.thinkingLevelMap), entry.reasoningLevels, `levels disagree with the map for ${entry.id}`);
   }
 });
+
+test('a user-supplied level map decides both the selector and the wire value', async () => {
+  const catalog = familyOnly();
+  // Exactly what the editor table stores: level → API value, blank meaning "send nothing".
+  const overrideMap = { off: null, minimal: null, low: 'low', medium: null, high: 'high', xhigh: null, max: 'max' };
+  const resolved = await resolveReasoningLevels({ id: 'claude-opus-5-5', overrideMap, catalog });
+  assert.equal(resolved.source, 'override');
+  assert.deepEqual(resolved.levels, ['low', 'high', 'max']);
+  assert.deepEqual(resolved.map, overrideMap);
+
+  // A level mapped to a vendor-specific string is passed through untouched.
+  const gemini = await resolveReasoningLevels({ id: 'gemini-3-pro', overrideMap: { low: 'LOW', high: 'HIGH' }, catalog });
+  assert.deepEqual(gemini.levels, ['low', 'high']);
+  assert.equal(gemini.map.low, 'LOW');
+});
