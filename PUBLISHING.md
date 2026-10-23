@@ -1,18 +1,20 @@
 # 发布清单（维护者用）
 
-本文件是 `dsh-newapi-provider` 的发布准备材料。**npm 发布、创建公开仓库、插件市场投稿都需要人工确认后单独执行**，任何自动化流程都不应代替这三步。
+本文件是 `dsh-newapi-provider` 的发布材料。**npm 发布、仓库转公开、插件市场投稿都需要人工确认后单独执行**，自动化流程不代替这三步。
 
-## 当前状态
+## 当前状态（2026-10-23）
 
 | 项目 | 状态 |
 | --- | --- |
-| 版本 | 0.7.2（未发布） |
-| 包名 | `dsh-newapi-provider`（npm 上当前未被占用，发布前请重新确认） |
-| 许可证 | MIT，版权人 `zenVibeCoding` |
-| 验证环境 | DSH 0.2.1-rc.2，Node.js 22.19+ |
-| 离线测试 | `npm test`，103 项 |
-| 真实生图 | 未验证（网关返回 503 无可用渠道） |
-| 真实视频 | 未验证（无视频渠道），工具为实验性 |
+| 版本 | 0.8.1（未发布） |
+| 包名 | `dsh-newapi-provider` — npm 上仍是 404，名称可用 |
+| 仓库 | https://github.com/zenVibeCoding/dsh-newapi-provider （公开，已加 `dsh-plugin` topic） |
+| 许可证 | MIT，作者 `zenVibeCoding` |
+| 验证环境 | DSH 0.2.1-rc.2 / Node.js 22.19+，`engines.dsh: >=0.2.1-rc.1 <0.3.0-0` |
+| 离线测试 | `npm test`，103 项全过 |
+| 打包 | 19 个文件，无凭据/本机路径 |
+| 真实生图 | **未验证**（网关返回 503 无可用渠道） |
+| 真实视频 | **未验证**（无视频渠道），工具为实验性 |
 
 ## 发布前必须完成
 
@@ -31,48 +33,89 @@ node --check client.js
 npm pack --dry-run --ignore-scripts
 ```
 
-预期：只包含 `index.js`、`client.js`、`lib/*.js`、`cordis.patch.yml`、`locale/*.json`、`icon.svg`、`README*.md`、`LICENSE`、`package.json`。
+预期：19 个文件，只含 `index.js`、`client.js`、`lib/*.js`、`cordis.patch.yml`、`locale/*.json`、`icon.svg`、`README*.md`、`PUBLISHING.md`、`LICENSE`、`package.json`。
 
-**不得包含**：`test/`、`node_modules`、个人网关地址或令牌、`.credentials*`、调研笔记（`~/dsh-newapi-plugin` 下的 `research/` 等）、会话截图、本机绝对路径。发布前用下面的命令自查：
+**不得包含**：`test/`、`node_modules`、`docs/`、个人网关地址或令牌、`.credentials*`、调研笔记（`~/dsh-newapi-plugin`）、会话截图。发布前自查：
 
 ```sh
 npm pack --dry-run --ignore-scripts 2>&1 | grep -Ei 'credential|secret|sk-|/Users/'
 ```
 
-## npm 发布
+## 第一步：npm 发布
 
-需要先由维护者登录（`npm login`），确认 registry 与包名归属：
+当前 `npm whoami` 报 `ENEEDAUTH`，需要先登录：
 
 ```sh
+npm login                     # 浏览器 OAuth；或 npm login --auth-type=legacy
 npm whoami
-npm view dsh-newapi-provider version   # 期望 404，表示名称可用
-git status --short                     # 应为干净
-npm publish --access public --otp <code>
+
+cd ~/dsh-newapi-provider
+git status --short             # 应为干净
+npm view dsh-newapi-provider version   # 期望 404
+
+npm publish --access public   # 开了 2FA 会提示 --otp <code>
 ```
 
-- 包名已被占用时不要改用途硬发，先决定后缀（例如 `dsh-newapi-provider-community`）并同步 README、`cordis.patch.yml`、locale 标题。
-- 发布后立刻验证：`npm view dsh-newapi-provider version` 与 `npm pack dsh-newapi-provider --dry-run`。
-
-## 公开仓库
-
-建议先推到一个私有仓库跑通 CI，再转公开：
+发布后立刻验证（不要只看 npm 网页缓存）：
 
 ```sh
-git remote add origin git@github.com:<account>/dsh-newapi-provider.git
-git push -u origin master
+npm view dsh-newapi-provider version     # 期望 0.8.1
+npm view dsh-newapi-provider dist.tarball
 ```
 
-- 仓库内不要带 `~/dsh-newapi-plugin` 的调研文档。
-- 建议加上 `.github/workflows/test.yml`：`npm ci && npm test`（本仓库无依赖，`npm install` 即可）。
-- 开源前确认 README 中的限制说明仍然准确。
+装一次真实回归（用临时 profile 或先卸载本地 link 安装）：
 
-## 插件市场投稿
+```sh
+dsh plugin add dsh-newapi-provider    # 走 npm 而非本地目录
+```
 
-市场通常要求：可安装的 npm 包名、一行简介、README 链接、图标、许可证、兼容的 DSH 版本范围。提交前确认：
+- 包名已被占用时不要硬发，先定后缀（如 `dsh-newapi-provider-community`）并同步 README、`cordis.patch.yml`、locale 标题。
+- 之后发新版只改版本号 → 提交 → `npm publish`，不要复用已发布的版本号。
 
-- `package.json` 的 `engines.dsh` 范围与实测 DSH 版本相符（当前 `>=0.2.1-rc.1 <0.3.0-0`）。
-- 图标（`icon.svg`）为原创或已获授权；厂商 logo 已按 MIT 来源标注。
-- 简介、截图与实际界面一致。
+## 第二步：插件市场投稿
+
+已核对 `awesome-dsh-plugin` 的 [contributing.md](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/blob/main/contributing.md)，规则如下：
+
+- **一个文件就是全部投稿**：PR 新增 `data/plugins/<owner>__<repo>.yml`，不要手改 README（README 由脚本生成）。
+- 只有 `description.en` 必填，中文描述可选（缺了维护者会补）。
+- 仓库 `package.json` 必须声明 `dsh.bundle`（本仓库有 `{"bundle":{"patch":"./cordis.patch.yml"}}`）。
+- 仓库需含真实可用代码；**创建满 1 天**（CI 自动查）。
+- 仓库需加 `dsh-plugin` topic（已完成）。
+- 描述必须属实，不带营销词；分类要贴合实际功能。
+
+**时间门槛**：仓库创建于 2026-10-23 07:01 UTC，需满 24 小时，即 **2026-10-24 15:01（东八区）之后**再提 PR。
+
+投稿文件内容（保存为 `data/plugins/zenVibeCoding__dsh-newapi-provider.yml`）：
+
+```yaml
+url: https://github.com/zenVibeCoding/dsh-newapi-provider
+name: zenVibeCoding/dsh-newapi-provider
+category: model
+description:
+  en: 'New API gateway provider: multi-channel models with context and modality details, quota, and image and video generation.'
+  zh: 'New API 网关提供商：多渠道模型管理与上下文/多模态标注、额度查询，以及生图与视频生成。'
+```
+
+> 描述里有 `: ` 必须加引号，否则 YAML 解析失败。
+
+提交步骤：
+
+```sh
+gh repo fork awesome-dsh-plugin/awesome-dsh-plugin --clone
+cd awesome-dsh-plugin
+# 写入上面那个 yml（文件名必须是 owner__repo.yml）
+git checkout -b add-dsh-newapi-provider
+git add data/plugins/zenVibeCoding__dsh-newapi-provider.yml
+git commit -m "Add dsh-newapi-provider"
+git push -u origin add-dsh-newapi-provider
+gh pr create --fill
+```
+
+分类备选：`model`（模型接入，最贴合）。若维护者认为更偏 UI，会直接改，不会打回。
+
+## 其他收录入口
+
+除了主列表，还有几个市场会自动抓取带 `dsh-plugin` topic 的仓库（如 `dsh-market`、`bradeGithub/DSH-Plugins-Marketplace` 等），加了 topic 后通常会被自动收录，无需逐个投稿。以各仓库说明为准。
 
 ## 版本与兼容
 
@@ -80,9 +123,8 @@ git push -u origin master
 - 路由 id 一旦发布就不要随意更改：改动会让已有会话失去模型选择。
 - 数据结构变更（`channels`、`enabledModels`、`models`）必须保持向后兼容，或在 README 写清迁移步骤。
 
-## 已知未完成项（发布时可写进「限制」）
+## 已知未完成项（可写进「限制」）
 
 - 旧令牌在轮换后仍保留在凭据库，需要「无进行中视频任务引用」的清理规则。
 - 重启后视频任务不会重新唤醒发起它的对话。
-- 无障碍细节：模型行有过多 Tab 停留点，健康状态会被屏幕阅读器反复播报。
 - 部分历史样式未被使用，可在发布前清理。
