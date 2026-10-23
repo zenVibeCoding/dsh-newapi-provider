@@ -54,6 +54,8 @@ window.__ModuleLoader__.load({
       levelsOffered: '将提供',
       levelsRequired: '至少保留一个档位', level_off: 'off', level_minimal: 'minimal', level_low: 'low', level_medium: 'medium', level_high: 'high', level_xhigh: 'xhigh', level_max: 'max',
       levelColumn: '档位', apiValueColumn: 'API 参数值', apiValuePlaceholder: '留空则不发送',
+      levelPlaceholder: '档位名，可自定义', levelInvalid: '档位只能用 1-24 位小写字母、数字、- 或 _',
+      levelDuplicate: '档位名重复了', levelNeedsValue: '自定义档位必须填写 API 参数值',
       addLevel: '添加档位', removeLevel: '移除该档位',
       levelsHelp: '不同厂商的推理档位并不相同：这里决定对话里可选哪些档位，以及每个档位发给网关的参数值。关闭开关则跟随模型自动识别。',
       reasoningEnabled: '声明支持推理', hideModel: '隐藏该模型', modelSave: '保存参数', reset: '恢复自动识别',
@@ -141,6 +143,8 @@ window.__ModuleLoader__.load({
       levelsOffered: 'Offers',
       levelsRequired: 'Pick at least one thinking level', level_off: 'off', level_minimal: 'minimal', level_low: 'low', level_medium: 'medium', level_high: 'high', level_xhigh: 'xhigh', level_max: 'max',
       levelColumn: 'Level', apiValueColumn: 'API value', apiValuePlaceholder: 'Empty sends nothing',
+      levelPlaceholder: 'Level name, custom allowed', levelInvalid: 'Levels use 1-24 lowercase letters, digits, - or _',
+      levelDuplicate: 'Duplicate level name', levelNeedsValue: 'A custom level needs an API value',
       addLevel: 'Add level', removeLevel: 'Remove level',
       levelsHelp: 'Vendors differ: this decides which levels the chat selector offers and what each one sends upstream. Leave the switch off to follow the detected set.',
       reasoningEnabled: 'Declare reasoning support', hideModel: 'Hide model', modelSave: 'Save parameters', reset: 'Use automatic values',
@@ -619,9 +623,20 @@ window.__ModuleLoader__.load({
      * Off = follow what the model declares; on = the table is exactly what ships.
      */
     function ReasoningLevelsEditor({ enabled, rows, detected, busy, onToggle, onChange }) {
+      const listId = useId();
       const t = useT();
       const setRow = (index, patch) => onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
-      const add = () => onChange([...rows, { level: LEVELS[0], value: '' }]);
+      // A new row starts empty so the user can type a custom level name; presets stay absent
+      // from the picker only while they are already used.
+      const add = () => onChange([...rows, { level: '', value: '' }]);
+      const used = new Set(rows.map((row) => row.level).filter(Boolean));
+      const problems = rows.map((row) => {
+        if (!row.level) return { row: true };
+        if (!LEVELS.includes(row.level) && !CUSTOM_LEVEL.test(row.level)) return { invalid: true };
+        if (rows.filter((other) => other.level === row.level).length > 1) return { duplicate: true };
+        if (row.value.trim() === '' && !LEVELS.includes(row.level)) return { needsValue: true };
+        return {};
+      });
       return h('div', { className: 'nas-levels' },
         h('div', { className: 'nas-levels-head' },
           h('div', { className: 'nas-levels-title' },
@@ -638,13 +653,12 @@ window.__ModuleLoader__.load({
             h('div', { className: 'nas-levels-row head' },
               h('span', null, t('levelColumn')), h('span', null, t('apiValueColumn')), h('span', { 'aria-hidden': true })),
             rows.map((row, index) => h('div', { className: 'nas-levels-row', key: `${row.level}-${index}` },
-              h('select', {
-                value: row.level, disabled: busy, lang: 'en', 'aria-label': t('levelColumn'),
-                onChange: (e) => setRow(index, { level: e.target.value }),
-              }, LEVELS.map((level) => h('option', {
-                key: level, value: level, lang: 'en',
-                disabled: level !== row.level && rows.some((other) => other.level === level),
-              }, level))),
+              h('input', {
+                value: row.level, disabled: busy, lang: 'en', spellCheck: false, list: `${listId}-levels`,
+                placeholder: t('levelPlaceholder'), 'aria-label': t('levelColumn'),
+                'aria-invalid': Boolean(problems[index].invalid || problems[index].duplicate),
+                onChange: (e) => setRow(index, { level: e.target.value.trim().toLowerCase() }),
+              }),
               h('input', {
                 value: row.value, disabled: busy, lang: 'en', spellCheck: false, placeholder: t('apiValuePlaceholder'),
                 'aria-label': t('apiValueColumn'), onChange: (e) => setRow(index, { value: e.target.value }),
@@ -661,11 +675,20 @@ window.__ModuleLoader__.load({
     /** Level→wire map to editable rows; falls back to the detected set when nothing is pinned. */
     function rowsFromMap(map, detectedLevels, detectedMap) {
       if (map && Object.keys(map).length) {
-        return LEVELS.filter((l) => typeof map[l] === 'string').map((l) => ({ level: l, value: map[l] }));
+        const names = Object.keys(map).filter((l) => typeof map[l] === 'string');
+        return orderLevelNames(names).map((l) => ({ level: l, value: map[l] }));
       }
       const levels = detectedLevels ?? [];
       return levels.map((l) => ({ level: l, value: (detectedMap && typeof detectedMap[l] === 'string') ? detectedMap[l] : defaultWireFor(l) }));
     }
+    /** Preset levels first, then custom names — the same order the server resolves. */
+    function orderLevelNames(names) {
+      const preset = LEVELS.filter((l) => names.includes(l));
+      const custom = names.filter((l) => !LEVELS.includes(l)).sort();
+      return [...preset, ...custom];
+    }
+    /** A custom level name must be a safe id; presets are always allowed. */
+    const CUSTOM_LEVEL = /^[a-z0-9][a-z0-9_-]{0,23}$/;
     /** Rows to the override map. A blank value means "this level sends nothing" (e.g. off). */
     function rowsToMap(rows) {
       const map = {};
@@ -711,6 +734,13 @@ window.__ModuleLoader__.load({
         if (a.pending) return;
         for (const k of ['contextWindow', 'maxTokens']) if (form[k] && (!/^\d+$/.test(form[k]) || Number(form[k]) < 1 || !Number.isSafeInteger(Number(form[k])))) return setInvalid(t('positiveInteger'));
         if (form.upstreamModel.trim() && (/\s|[\u0000-\u001f\u007f-\u009f]/u.test(form.upstreamModel.trim()) || form.upstreamModel.trim().length > 500)) return setInvalid(t('invalidMapping'));
+        if (form.levelsMode === 'custom') {
+          const levels = form.rows.map((row) => row.level).filter(Boolean);
+          if (!levels.length) return setInvalid(t('levelsRequired'));
+          if (levels.some((level) => !LEVELS.includes(level) && !CUSTOM_LEVEL.test(level))) return setInvalid(t('levelInvalid'));
+          if (new Set(levels).size !== levels.length) return setInvalid(t('levelDuplicate'));
+          if (form.rows.some((row) => row.level && !LEVELS.includes(row.level) && !row.value.trim())) return setInvalid(t('levelNeedsValue'));
+        }
         const override = { ...initial };
         for (const k of ['name', 'upstreamModel', 'kind', 'protocol', 'contextWindow', 'maxTokens']) {
           const value = form[k].trim();
@@ -1219,7 +1249,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.2' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.3' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },

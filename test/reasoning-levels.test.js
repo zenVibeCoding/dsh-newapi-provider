@@ -119,3 +119,17 @@ test('a user-supplied level map decides both the selector and the wire value', a
   assert.deepEqual(gemini.levels, ['low', 'high']);
   assert.equal(gemini.map.low, 'LOW');
 });
+
+test('custom level names work when they carry a wire value', async () => {
+  const catalog = familyOnly();
+  const overrideMap = { low: 'low', high: 'high', ultra: 'ULTRA', bogus: null };
+  const resolved = await resolveReasoningLevels({ id: 'claude-opus-5-5', overrideMap, catalog });
+  // Preset levels first, then the custom one; a custom name without a value is not offered.
+  assert.deepEqual(resolved.levels, ['low', 'high', 'ultra']);
+  assert.equal(resolved.map.ultra, 'ULTRA');
+  assert.equal(resolved.map.bogus, undefined);
+
+  // A custom name that is not a safe id never becomes a level.
+  const rejected = await resolveReasoningLevels({ id: 'x', overrideMap: { 'Not An Id': 'x' }, catalog });
+  assert.deepEqual(rejected.levels, ['off', 'minimal', 'low', 'medium', 'high']);
+});
