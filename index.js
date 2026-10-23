@@ -461,7 +461,7 @@ export function apply(ctx, config) {
       fetchedAt: value.fetchedAt,
       pricingAvailable: value.pricingAvailable,
       pricingError: value.pricingError,
-      entries: value.entries.map((e) => ({
+      entries: value.entries.map(({ thinkingLevelMap, ...e }) => ({   // the map is wire detail, not UI state
         ...e,
         // Own-property read: built-in names such as `toString` are legal model ids.
         override: structuredClone(Object.hasOwn(captured.models ?? {}, e.id) ? captured.models[e.id] : {}),
@@ -612,6 +612,8 @@ export function apply(ctx, config) {
             input: e.input,
             output: e.outputModalities,
             reasoning: e.reasoning,
+            reasoningLevels: e.reasoningLevels ?? [],
+            reasoningLevelsSource: e.reasoningLevelsSource ?? 'default',
             endpointTypes: e.endpointTypes,
             vendor: e.vendor,
             pricing: e.pricing,

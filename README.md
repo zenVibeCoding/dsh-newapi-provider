@@ -82,6 +82,31 @@ Each gateway keeps an independent list, even when two gateways point at the same
 
 Capability data is a hint, not proof: a relay may list a model and still fail to serve it.
 
+## Thinking levels
+
+Vendors do not agree on reasoning levels, so each model resolves its own set instead of every reasoning model showing the same five:
+
+| Vendor / model | Levels offered | Notes |
+| --- | --- | --- |
+| Claude adaptive thinking (Opus 5 / Sonnet 5 / Fable) | low / medium / high / xhigh / max | no `minimal`, no `off` |
+| Older Claude (budget based) | off / minimal / low / medium / high | mapped to token budgets |
+| GPT-5.1+ / GPT-6 | off / low / medium / high / xhigh / max | `off` is sent as `none`, no `minimal` |
+| GPT-5.0 / o-series | minimal / low / medium / high | GPT-5.0 cannot be turned off; o-series stops at high |
+| gpt-5-pro | high only | the vendor accepts nothing else |
+| Gemini 3 / 4 | minimal / low / medium / high | `thinking_level` has no off; no xhigh/max |
+| Gemini 2.5 | off / minimal / low / medium / high | budget based; Pro cannot really be switched off |
+| DeepSeek V4 | off / low / high / max | the vendor folds the in-between levels |
+| GLM-5.3 | low / high / max | sending `disabled` errors, so no off |
+| GLM-5.2 | all seven | most levels are folded upstream |
+| Kimi K3 | low / high / max | no medium, cannot be switched off |
+| Qwen3 / unknown | off / minimal / low / medium / high | pi-ai's own default when a model has no levels |
+
+Resolution order: **your override → pi-ai's shipped model data (same model, same behaviour as the built-in provider) → vendor-family default**.
+
+**Model capabilities → Edit model → Thinking levels** lets you switch to "Custom" and pick the levels yourself; the choice is stored as an override on that model in that gateway and affects only this plugin.
+
+> Limitation: relays rename models (`claude-opus-5-5`), so a family guess fills the gap when the exact id is unknown. Use a custom override if the upstream disagrees. A level only changes the request; whether the upstream honours that depth is up to it.
+
 ## Models and modalities
 
 models.dev data is cached. Exact matches win; when nothing matches, defaults apply. Base-model matches, defaults and manual overrides are all marked in the UI. Never treat a guessed capability as something the gateway has proven.

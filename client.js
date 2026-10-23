@@ -48,6 +48,10 @@ window.__ModuleLoader__.load({
       reasoning: '推理', noReasoning: '未声明推理', auto: '自动识别', overridden: '已自定义', defaults: '默认值',
       modelEmpty: '没有匹配的模型', noModels: '当前渠道暂无模型目录', hidden: '已隐藏', modelEdit: '编辑模型参数', modelEditHint: '只影响此渠道的该模型；不会修改 New API 站点。',
       kind: '模型类型', displayName: '显示名称', inputModalities: '输入能力', inputHint: 'DSH 对话层支持文本与图片；PDF、音视频标签仅用于展示，不能直接作为对话输入。',
+      reasoningLevels: '思考等级', reasoningLevelsMode: '思考等级模式',
+      levelsAutoHint: '按模型自动识别：不同厂商支持的等级不同，例如 Gemini 3 只有低/高，DeepSeek 有低/高/最高，Claude 支持最高档。',
+      levelsCustomHint: '已自定义：这里的选项会覆盖自动识别，只有你勾选的等级会出现在对话选择器里。',
+      levelsRequired: '至少勾选一个思考等级', level_off: '关闭', level_minimal: '最少', level_low: '低', level_medium: '中', level_high: '高', level_xhigh: '很高', level_max: '最高',
       reasoningEnabled: '声明支持推理', hideModel: '隐藏该模型', modelSave: '保存参数', reset: '恢复自动识别',
       resetHint: '清除此渠道中该模型的全部自定义参数。', modelSaved: '模型参数已更新', modelReset: '已恢复自动识别',
       inherited: '留空使用自动识别或默认值', positiveInteger: '请输入大于 0 的整数',
@@ -127,6 +131,10 @@ window.__ModuleLoader__.load({
       reasoning: 'Reasoning', noReasoning: 'No reasoning declared', auto: 'Automatic', overridden: 'Customized', defaults: 'Default',
       modelEmpty: 'No matching models', noModels: 'No model catalog for this gateway', hidden: 'Hidden', modelEdit: 'Edit model', modelEditHint: 'Changes this model on this gateway only, not the New API site.',
       kind: 'Model kind', displayName: 'Display name', inputModalities: 'Input capabilities', inputHint: 'DSH chat accepts text and image. PDF, video and audio tags are informational only.',
+      reasoningLevels: 'Thinking levels', reasoningLevelsMode: 'Thinking level mode',
+      levelsAutoHint: 'Detected per model: vendors differ — Gemini 3 offers low/high only, DeepSeek low/high/max, Claude includes max.',
+      levelsCustomHint: 'Customised: these replace the detected set, and only the levels you pick appear in the chat selector.',
+      levelsRequired: 'Pick at least one thinking level', level_off: 'Off', level_minimal: 'Minimal', level_low: 'Low', level_medium: 'Medium', level_high: 'High', level_xhigh: 'Extra high', level_max: 'Max',
       reasoningEnabled: 'Declare reasoning support', hideModel: 'Hide model', modelSave: 'Save parameters', reset: 'Use automatic values',
       resetHint: 'Removes all overrides for this model on this gateway.', modelSaved: 'Model parameters updated', modelReset: 'Automatic values restored',
       inherited: 'Leave empty for automatic or default values', positiveInteger: 'Enter a positive integer',
@@ -178,6 +186,7 @@ window.__ModuleLoader__.load({
       useEffect(() => locale?.subscribe(() => rerender((x) => x + 1)), []);
       return (key) => translate?.(key) ?? ZH[key] ?? key;
     }
+    const LEVELS = ['off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'];
     const ICONS = {
       plus: 'M12 5v14M5 12h14', refresh: 'M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3a7 7 0 0 0 11.6-1',
       check: 'm5 12 4 4L19 6', close: 'm6 6 12 12M6 18 18 6', edit: 'm15 5 4 4M4 20l4-1L20 7a2.1 2.1 0 0 0-3-3L5 16Z',
@@ -371,6 +380,13 @@ window.__ModuleLoader__.load({
       .nas-side-balance-icon{display:inline-flex;color:var(--nas-sub);flex-shrink:0}
       .nas-side-balance[data-wide=no] .nas-side-balance-btn{justify-content:center;padding:6px 0;gap:0}
       .nas-side-balance[data-wide=no] .nas-side-balance-icon{display:none}
+      /* Level chips: same look as the input-modality toggles. */
+      .nas-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+      .nas-chips .nas-chip,.nas-chips button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--nas-line);background:var(--nas-bg);color:var(--nas-text);border-radius:7px;padding:4px 9px;font-size:12px;line-height:1.5}
+      .nas-chips button:hover{border-color:var(--nas-brand)}
+      .nas-chips button[aria-pressed=true]{border-color:var(--nas-brand);background:color-mix(in srgb,var(--nas-accent) 7%,transparent);font-weight:550}
+      .nas-chips.readonly .nas-chip{cursor:default;color:var(--nas-sub)}
+      .nas-chips.readonly .nas-chip.on{color:var(--nas-text);border-color:var(--nas-line-strong,var(--nas-line))}
       /* Tooltips: instant, themed, keyboard accessible. */
       .nas [data-tip]{position:relative}
       .nas [data-tip]::after{content:attr(data-tip);position:absolute;z-index:60;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);width:max-content;max-width:270px;padding:6px 9px;border-radius:7px;border:1px solid var(--nas-line);background:var(--dsw-alias-bg-overlay);color:var(--nas-text);font-size:11px;font-weight:400;line-height:1.55;text-align:left;white-space:pre-line;box-shadow:0 8px 24px color-mix(in srgb,var(--dsw-alias-label-primary) 16%,transparent);opacity:0;pointer-events:none;transition:opacity .12s}
@@ -581,6 +597,8 @@ window.__ModuleLoader__.load({
         inputMode: Array.isArray(initial.input) ? 'custom' : 'auto',
         input: [...(initial.input ?? automaticInput)],
         reasoningMode: initial.reasoning == null ? 'auto' : initial.reasoning ? 'on' : 'off',
+        levelsMode: Array.isArray(initial.reasoningLevels) && initial.reasoningLevels.length ? 'custom' : 'auto',
+        levels: [...(initial.reasoningLevels ?? model.automaticReasoningLevels ?? [])],
         hidden: Boolean(initial.hidden),
       });
       const original = useRef(JSON.stringify(form)); const dirty = original.current !== JSON.stringify(form);
@@ -600,6 +618,8 @@ window.__ModuleLoader__.load({
         }
         override.input = form.inputMode === 'auto' ? null : form.input;
         override.reasoning = form.reasoningMode === 'auto' ? null : form.reasoningMode === 'on';
+        // null keeps the resolved default; an explicit array pins the selector.
+        override.reasoningLevels = form.levelsMode === 'auto' ? null : form.levels;
         override.hidden = form.hidden ? true : null;
         return a.run(async () => { await store.mutate('model/override', { revision, channelId: channel.id, modelId: model.id, override }); onSaved(false); });
       };
@@ -637,7 +657,20 @@ window.__ModuleLoader__.load({
           })),
           h('div', { className: 'nas-note', style: { marginTop: 8, marginBottom: 16 } }, t('inputHint')),
           h(Field, { label: t('reasoning'), htmlFor: `${id}-reasoning` }, h('select', { id: `${id}-reasoning`, value: form.reasoningMode, onChange: changed('reasoningMode'), disabled: a.pending },
-            h('option', { value: 'auto' }, `${t('followAuto')} · ${t((model.automaticReasoning ?? model.reasoning) ? 'enableReasoning' : 'disableReasoning')}`), h('option', { value: 'on' }, t('enableReasoning')), h('option', { value: 'off' }, t('disableReasoning'))))),
+            h('option', { value: 'auto' }, `${t('followAuto')} · ${t((model.automaticReasoning ?? model.reasoning) ? 'enableReasoning' : 'disableReasoning')}`), h('option', { value: 'on' }, t('enableReasoning')), h('option', { value: 'off' }, t('disableReasoning')))),
+          (form.reasoningMode !== 'off') && h(Field, { label: t('reasoningLevels'), hint: t(initial.reasoningLevels?.length ? 'levelsCustomHint' : 'levelsAutoHint') },
+            h('div', { className: 'nas-mode', role: 'group', 'aria-label': t('reasoningLevelsMode') },
+              h('button', { type: 'button', 'aria-pressed': form.levelsMode === 'auto', disabled: a.pending, onClick: () => setForm({ ...form, levelsMode: 'auto' }) }, t('automaticMode')),
+              h('button', { type: 'button', 'aria-pressed': form.levelsMode === 'custom', disabled: a.pending, onClick: () => setForm({ ...form, levelsMode: 'custom', levels: form.levels.length ? form.levels : [...(model.automaticReasoningLevels ?? ['low', 'medium', 'high']) ] }) }, t('customMode'))),
+            form.levelsMode === 'auto'
+              ? h('div', { className: 'nas-chips readonly' }, (model.automaticReasoningLevels ?? []).map((l) => h('span', { key: l, className: 'nas-chip on' }, t('level_' + l))))
+              : h('div', { className: 'nas-chips' }, LEVELS.map((l) => {
+                const on = form.levels.includes(l);
+                return h('button', { key: l, type: 'button', 'aria-pressed': on, disabled: a.pending,
+                  onClick: () => setForm({ ...form, levels: on ? form.levels.filter((x) => x !== l) : LEVELS.filter((x) => x === l || form.levels.includes(x)) }) },
+                  on && h(Icon, { name: 'check', size: 11 }), t('level_' + l));
+              })),
+            form.levelsMode === 'custom' && !form.levels.length && h('span', { className: 'nas-field-error' }, t('levelsRequired')))),
         h('details', { className: 'nas-editor-advanced' }, h('summary', null, t('advancedOptions')),
           h('div', { className: 'nas-two' },
             h(Field, { label: t('kind'), htmlFor: `${id}-kind` }, h('select', { id: `${id}-kind`, value: form.kind, onChange: changed('kind'), disabled: a.pending }, h('option', { value: '' }, t('auto')), ['chat', 'image', 'video', 'audio', 'embedding', 'other'].map((k) => h('option', { key: k, value: k }, t(k))))),
@@ -1032,6 +1065,7 @@ window.__ModuleLoader__.load({
                 m.kind === 'chat' ? `${t('context')}: ${m.effectiveContextWindow} / ${t('maxOutput')}: ${m.effectiveMaxTokens}` : t(m.kind),
                 `${t('source')}: ${m.source?.modelsDev?.provider || t('defaults')} · ${t(m.source?.modelsDev ? m.source.modelsDev.match === 'prefix' ? 'originPrefix' : 'originExact' : 'originNone')}`,
                 m.source?.overridden?.length ? `${t('overridden')}: ${m.source.overridden.join(', ')}` : null,
+                m.reasoning && m.reasoningLevels?.length ? `${t('reasoningLevels')}: ${m.reasoningLevels.map((l) => t('level_' + l)).join(' / ')}` : null,
               ].filter(Boolean).join('\n') },
                 m.kind === 'chat' ? h('span', { className: 'nas-cap-numbers' }, tokens(m.effectiveContextWindow), h('span', { className: 'nas-cap-divider' }, ' / '), tokens(m.effectiveMaxTokens)) : h('span', null, t(m.kind)),
                 h('span', { className: 'nas-cap-icons' },
@@ -1086,7 +1120,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.8.4' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.0' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },
