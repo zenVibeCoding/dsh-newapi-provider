@@ -53,7 +53,9 @@ window.__ModuleLoader__.load({
       originExact: '目录精确匹配', originPrefix: '按基础模型匹配', originNone: '暂无能力数据',
       generationEmpty: '还没有生成记录', generationHint: '在对话中使用生图或视频工具，结果会保存在这里。',
       tasks: '视频任务', submitting: '提交中', queued: '排队中', in_progress: '生成中', completed: '已完成',
-      'submit-unknown': '提交结果未知', expired: '已超时', issues: '连接诊断',
+      task_failed: '生成失败', 'download-pending': '已生成，等待下载重试', 'download-failed': '已生成，下载未成功',
+      previewOmitted: '图片已生成；为保护签名信息，未直接展示下载链接。请勿因没有预览而重复生成。',
+      'submit-unknown': '提交结果未知，可能已计费', expired: '已超时', issues: '连接诊断',
       imageCard: '生成图片', videoCard: '生成视频', videoStatusCard: '视频任务状态', generating: '生成中…',
       close: '关闭', updated: '数据时间', stale: '上次数据', privacy: '密钥不回显',
       savingBlocked: '请先等待当前操作完成', nameRequired: '请填写渠道名称', addressRequired: '请填写完整的 http:// 或 https:// 地址',
@@ -126,7 +128,9 @@ window.__ModuleLoader__.load({
       originExact: 'Exact catalog match', originPrefix: 'Base-model match', originNone: 'No capability metadata',
       generationEmpty: 'No generations yet', generationHint: 'Generate an image or video in chat; saved results appear here.',
       tasks: 'Video tasks', submitting: 'Submitting', queued: 'Queued', in_progress: 'Generating', completed: 'Completed',
-      'submit-unknown': 'Submission unknown', expired: 'Timed out', issues: 'Connection diagnostics',
+      task_failed: 'Generation failed', 'download-pending': 'Generated; download retry pending', 'download-failed': 'Generated; download unsuccessful',
+      previewOmitted: 'Image generated. The signed URL is withheld for privacy; do not regenerate just because a preview is unavailable.',
+      'submit-unknown': 'Submission unknown; may be billed', expired: 'Timed out', issues: 'Connection diagnostics',
       imageCard: 'Image generation', videoCard: 'Video generation', videoStatusCard: 'Video status', generating: 'Generating…',
       close: 'Close', updated: 'Updated', stale: 'Last known data', privacy: 'Tokens stay private',
       savingBlocked: 'Wait for the current operation', nameRequired: 'Enter a gateway name', addressRequired: 'Enter a complete http:// or https:// URL',
@@ -698,6 +702,7 @@ window.__ModuleLoader__.load({
       !result && h('div', { className: 'nas-mode' }, h(Icon, { name: 'alert', size: 14 }), t(model.kind === 'video' ? 'paidVideo' : 'paidImage')),
       result && (result.ok || result.phase === 'accepted'
         ? h('div', { className: `nas-test ${result.ok ? 'ok' : ''}`, role: 'status' }, h('strong', null, `${t(result.ok ? 'testOk' : 'acceptedTest')} · ${ms(result.latencyMs)}`),
+          result.previewOmitted && h('small', null, t('previewOmitted')),
           preview?.type === 'image' && h('div', { className: 'nas-preview-test' }, h('img', { src: preview.src, alt: model.id })),
           preview?.type === 'video-task' && h('small', null, `${t('tasks')}: ${preview.taskId}`))
         : h('div', { className: 'nas-test bad', role: 'alert' }, errorLabel(t, result))));
@@ -919,7 +924,7 @@ window.__ModuleLoader__.load({
       return h(React.Fragment, null,
         Boolean(media?.tasks?.length) && h('div', { style: { marginBottom: 18 } }, h('strong', { style: { fontSize: 13, fontWeight: 550 } }, t('tasks')), media.tasks.map((task) => h('div', { key: task.taskId, className: 'nas-task' },
           h('div', null, h('div', null, task.model), h('div', { className: 'nas-sub' }, task.taskId), task.error && h('div', { className: 'nas-field-error' }, task.error)),
-          h(Badge, { tone: task.status === 'completed' ? 'good' : task.status === 'failed' ? 'error' : 'active' }, t(task.status), task.progress != null ? ` ${task.progress}%` : '')))),
+          h(Badge, { tone: task.status === 'completed' ? 'good' : task.status === 'failed' ? 'error' : 'active' }, t(task.status === 'failed' ? 'task_failed' : task.status), task.progress != null ? ` ${task.progress}%` : '')))),
         items.length ? h('div', { className: 'nas-gallery' }, items.flatMap((item) => [
           ...(item.images || []).map((img) => h('figure', { key: img.id }, h('a', { href: apiUrl(`media/image/${img.id}`), target: '_blank', rel: 'noreferrer' }, h('img', { src: apiUrl(`media/image/${img.id}`), alt: item.prompt, loading: 'lazy' })), h('figcaption', null, item.model))),
           ...(item.file ? [h('figure', { key: item.file.id }, h('video', { src: apiUrl(`media/video/${item.file.id}`), controls: true, preload: 'metadata' }), h('figcaption', null, item.model))] : []),
@@ -948,7 +953,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.0' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.1' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },
@@ -1011,9 +1016,9 @@ window.__ModuleLoader__.load({
         error && h(ErrorText, { text: error }),
         a.prompt && h('div', { className: 'nas-prompt' }, a.prompt),
         isImage && value?.images?.length > 0 && h('div', { className: 'nas-preview' }, value.images.map((image) => h('a', { key: image.attachmentId, href: apiUrl(`media/image/${image.attachmentId}`), target: '_blank', rel: 'noreferrer' }, h('img', { src: apiUrl(`media/image/${image.attachmentId}`), alt: a.prompt || '' })))),
-        !isImage && task && h(Badge, { tone: task.status === 'completed' ? 'good' : 'active' }, t(task.status), task.progress != null ? ` ${task.progress}%` : ''),
+        !isImage && task && h(Badge, { tone: task.status === 'completed' ? 'good' : 'active' }, t(task.status === 'failed' ? 'task_failed' : task.status), task.progress != null ? ` ${task.progress}%` : ''),
         !isImage && media?.file && h('div', { className: 'nas-preview' }, h('video', { src: apiUrl(`media/video/${media.file.id}`), controls: true, preload: 'metadata' })),
-        !isImage && value?.tasks && h('div', { className: 'nas-sub' }, value.tasks.map((x) => `${x.model}: ${t(x.status)}`).join(' · ')));
+        !isImage && value?.tasks && h('div', { className: 'nas-sub' }, value.tasks.map((x) => `${x.model}: ${t(x.status === 'failed' ? 'task_failed' : x.status)}`).join(' · ')));
     }
     return {
       inject: ['slots', 'locale'],

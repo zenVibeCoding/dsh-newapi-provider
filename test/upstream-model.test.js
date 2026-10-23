@@ -52,7 +52,10 @@ test('catalog maps one hop, prefers target facts, and keeps local identity and s
 for (const protocol of ['openai', 'openai-response', 'anthropic']) test(`tester ${protocol} sends remote but persists local lastTest`, async (t) => {
   const original = globalThis.fetch; t.after(() => { globalThis.fetch = original; });
   let body;
-  globalThis.fetch = async (_url, options) => { body = JSON.parse(options.body); return new Response('data: [DONE]\n\n', { headers: { 'content-type': 'text/event-stream' } }); };
+  const terminal = protocol === 'openai' ? { choices: [{ delta: {}, finish_reason: 'stop' }] }
+    : protocol === 'anthropic' ? { type: 'message_stop' }
+    : { type: 'response.completed', response: { status: 'completed' } };
+  globalThis.fetch = async (_url, options) => { body = JSON.parse(options.body); return new Response(`data: ${JSON.stringify(terminal)}\n\ndata: [DONE]\n\n`, { headers: { 'content-type': 'text/event-stream' } }); };
   const tester = new ModelTester({ channelFacts: async () => ({ baseURL: 'https://offline.invalid', apiKey: async () => 'fake', entryFor: async () => ({ id: 'local', kind: 'chat', upstreamModel: 'remote', endpointTypes: [protocol] }) }) });
   const result = await tester.run({ channelId: 'a', modelId: 'local' });
   assert.equal(body.model, 'remote'); assert.equal(result.ok, true); assert.equal(result.modelId, 'local'); assert.equal(result.upstreamModel, 'remote');

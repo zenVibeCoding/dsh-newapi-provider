@@ -55,7 +55,7 @@ test('rejects HTML, role-only, truncated, invalid JSON, and disconnected SSE wit
   assert.equal(fetch.mock.callCount(), cases.length);
 });
 
-test('requires matching native terminal events; supports common gateway DONE for every protocol', async (t) => {
+test('requires matching native terminal events; rejects bare DONE for every protocol', async (t) => {
   let body;
   fakeFetch(t, () => sse(body));
   for (const [protocol, terminal] of [
@@ -66,7 +66,7 @@ test('requires matching native terminal events; supports common gateway DONE for
     body = event(terminal);
     assert.equal((await tester('chat', [protocol]).run(input)).ok, true);
     body = done;
-    assert.equal((await tester('chat', [protocol]).run(input)).ok, true);
+    assert.equal((await tester('chat', [protocol]).run(input)).ok, false);
   }
   body = event({ type: 'message_stop' });
   assert.equal((await tester('chat', ['openai-response']).run(input)).ok, false);
