@@ -96,7 +96,7 @@ category: model
 description:
   en: 'New API gateway provider: several gateways with one active at a time, per-gateway model lists with context and modality details, quota, and image and video generation tools.'
   zh: 'New API 网关提供商：多网关同一时间激活一个，每个网关独立的模型清单与上下文/多模态标注、额度查询，以及生图与视频生成工具。'
-icon: https://raw.githubusercontent.com/zenVibeCoding/dsh-newapi-provider/main/assets/icon-180.png
+icon: https://raw.githubusercontent.com/zenVibeCoding/dsh-newapi-provider/master/assets/icon-180.png
 ```
 
 > 描述里有 `: ` 必须加引号，否则 YAML 解析失败（上面英文描述就是这种情况）。
