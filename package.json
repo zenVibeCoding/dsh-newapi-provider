@@ -1,6 +1,6 @@
 {
   "name": "dsh-newapi-provider",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "New API gateway for DeepSeek Harness: models with context and modality details, balance, image and video generation.",
   "license": "MIT",
   "author": "zenVibeCoding",
@@ -45,6 +45,10 @@
   ],
   "scripts": {
     "test": "node --test test/*.test.js"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "engines": {
     "node": ">=22.19.0",
