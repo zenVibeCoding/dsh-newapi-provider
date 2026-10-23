@@ -22,6 +22,7 @@ window.__ModuleLoader__.load({
       unlimited: '令牌额度不限', totalModels: '可发现模型', chat: '对话', image: '生图', video: '视频', audio: '音频', embedding: '向量', other: '其他',
       all: '全部', text: '文本', pdf: 'PDF', inputImage: '图片', inputVideo: '视频', inputAudio: '音频',
       credentialSet: '凭据已设置', credentialMissing: '未设置凭据', failed: '连接异常', loading: '正在加载…', retry: '重试',
+      sidebarBalanceHint: '点击刷新额度',
       loadFailed: '无法读取渠道数据', loadFailedHint: '如果刚重启过 DSH，请确认插件已加载后再试。',
       cached: '已缓存', balanceUnavailable: '额度暂不可用', notFetched: '待查询', used: '已用', remaining: '剩余',
       accountHint: '想看账户总余额？请在 New API 令牌设置中打开「允许查询用户额度」。',
@@ -100,6 +101,7 @@ window.__ModuleLoader__.load({
       unlimited: 'Unlimited token', totalModels: 'Discovered models', chat: 'Chat', image: 'Image', video: 'Video', audio: 'Audio', embedding: 'Embedding', other: 'Other',
       all: 'All', text: 'Text', pdf: 'PDF', inputImage: 'Image', inputVideo: 'Video', inputAudio: 'Audio',
       credentialSet: 'Credential set', credentialMissing: 'No credential', failed: 'Connection issue', loading: 'Loading…', retry: 'Retry',
+      sidebarBalanceHint: 'Click to refresh the quota',
       loadFailed: 'Could not read gateway data', loadFailedHint: 'If DSH was just restarted, make sure the plugin is loaded and try again.',
       cached: 'Cached', balanceUnavailable: 'Quota unavailable', notFetched: 'Not queried', used: 'Used', remaining: 'Remaining',
       accountHint: 'To see account balance, enable “Allow user quota query” in the token settings on New API.',
@@ -192,6 +194,7 @@ window.__ModuleLoader__.load({
       gauge: 'm12 14 4-4M3.34 19a10 10 0 1 1 17.32 0',
       heartPulse: 'M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7ZM3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27',
       heart: 'M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z',
+      wallet: 'M3 7.5A2.5 2.5 0 0 1 5.5 5H18a2 2 0 0 1 2 2v1M3 7.5V18a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H5.5A2.5 2.5 0 0 1 3 7.5ZM16 13h.01',
       heartCrack: 'M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7ZM12 13l-1-1 2-2-3-3 2-2',
       document: 'M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6',
       audio: 'M5 10v4M9 6v12M13 3v18M17 7v10M21 10v4',
@@ -354,6 +357,20 @@ window.__ModuleLoader__.load({
       .nas-skeleton{display:flex;flex-direction:column;gap:9px;padding:16px 12px}
       .nas-skeleton>i{display:block;height:14px;border-radius:5px;background:var(--nas-raised);animation:nas-pulse 1.2s ease-in-out infinite}
       @keyframes nas-pulse{50%{opacity:.45}}
+      /* Sidebar-foot balance: one compact row, two densities. */
+      .nas-side-balance{display:block;width:100%;min-width:0}
+      .nas-side-balance-btn{display:flex;align-items:center;gap:8px;width:100%;min-width:0;border:1px solid transparent;background:transparent;color:var(--nas-text);border-radius:8px;padding:6px 8px;text-align:left;line-height:1.35;transition:background .12s,border-color .12s}
+      .nas-side-balance-btn:hover{background:var(--nas-raised);border-color:var(--nas-line)}
+      .nas-side-balance-btn:focus-visible{outline:2px solid var(--nas-brand);outline-offset:2px}
+      .nas-side-balance-dot{width:7px;height:7px;border-radius:50%;background:var(--dsw-alias-state-idle-primary);flex-shrink:0}
+      .nas-side-balance-dot.ok{background:var(--dsw-alias-state-success-primary)}
+      .nas-side-balance-dot.warn{background:var(--dsw-alias-state-warn-primary)}
+      .nas-side-balance-main{display:flex;flex-direction:column;min-width:0;flex:1}
+      .nas-side-balance-name{font-size:11px;color:var(--nas-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .nas-side-balance-value{font-size:12px;font-weight:550;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .nas-side-balance-icon{display:inline-flex;color:var(--nas-sub);flex-shrink:0}
+      .nas-side-balance[data-wide=no] .nas-side-balance-btn{justify-content:center;padding:6px 0;gap:0}
+      .nas-side-balance[data-wide=no] .nas-side-balance-icon{display:none}
       /* Tooltips: instant, themed, keyboard accessible. */
       .nas [data-tip]{position:relative}
       .nas [data-tip]::after{content:attr(data-tip);position:absolute;z-index:60;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);width:max-content;max-width:270px;padding:6px 9px;border-radius:7px;border:1px solid var(--nas-line);background:var(--dsw-alias-bg-overlay);color:var(--nas-text);font-size:11px;font-weight:400;line-height:1.55;text-align:left;white-space:pre-line;box-shadow:0 8px 24px color-mix(in srgb,var(--dsw-alias-label-primary) 16%,transparent);opacity:0;pointer-events:none;transition:opacity .12s}
@@ -1065,7 +1082,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.6' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.8.0' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },
@@ -1104,14 +1121,34 @@ window.__ModuleLoader__.load({
         editor && h(ChannelEditor, { ...editor, onClose: () => setEditor(undefined), onSaved: () => notify('saved') }),
         modelEditor && h(ModelEditor, { ...modelEditor, onClose: () => setModelEditor(undefined), onSaved: (reset) => notify(reset ? 'modelReset' : 'modelSaved') }));
     }
-    function BalancePill() {
+    /**
+     * Sidebar-foot balance. The owner passes wide=true for the expanded column,
+     * false for the 56px rail, which keeps only the status dot.
+     */
+    function SidebarBalance({ wide = true }) {
       const t = useT(); const { state, error, busy } = useProvider(); const a = useAction();
       const active = state?.channels?.find((c) => c.id === state.activeChannel);
       const b = active?.balance || state?.balance; const q = quota(b);
-      return h('span', { className: 'nas', style: { width: 'auto' } }, h(Styles),
-        h('button', { className: 'nas-pill', type: 'button', disabled: busy, title: a.error || error || `${active?.name || 'New API'} · ${t('refresh')}`, onClick: () => a.run(() => store.mutate('refresh', {})) },
-          h('span', { className: `nas-dot ${error || b?.status === 'error' ? 'warn' : 'ok'}` }),
-          active?.name || 'New API', ' · ', !state ? t('loading') : `${t(q.label)} ${q.value}`));
+      const failed = Boolean(error) || b?.status === 'error';
+      const name = active?.name || 'New API';
+      const detail = [
+        name,
+        state ? `${t(q.label)} ${q.value}` : t('loading'),
+        b?.token?.unlimited ? t('unlimited') : b?.token?.name,
+        failed ? (a.error || error || b?.message) : null,
+        `${t('refresh')} · ${t('sidebarBalanceHint')}`,
+      ].filter(Boolean).join('\n');
+      return h('span', { className: 'nas nas-side-balance', 'data-wide': wide ? 'yes' : 'no' }, h(Styles),
+        h('button', {
+          type: 'button', className: 'nas-side-balance-btn', disabled: busy,
+          'data-tip': detail, 'data-tip-align': 'start', 'aria-label': detail,
+          onClick: () => a.run(() => store.mutate('refresh', {})),
+        },
+        h('span', { className: `nas-side-balance-dot ${failed ? 'warn' : b?.status === 'ok' ? 'ok' : ''}` }),
+        wide && h('span', { className: 'nas-side-balance-main' },
+          h('span', { className: 'nas-side-balance-name' }, name),
+          h('span', { className: 'nas-side-balance-value' }, !state ? t('loading') : q.value)),
+        h('span', { className: 'nas-side-balance-icon' }, h(Icon, { name: 'wallet', size: 15 }))));
     }
     // Tool cards use durable tool output, not text scraping.
     function resultValue(props) { const b = props.phase === 'result' ? props.block : undefined; return b?.value ?? b?.result?.value ?? b?.output; }
@@ -1140,7 +1177,7 @@ window.__ModuleLoader__.load({
         ctx.effect(() => ctx.locale.register(NS, 'zh', stringsOnly(ZH)));
         translate = ctx.locale.bind(NS);
         ctx.effect(() => () => { store.dispose(); locale = undefined; translate = undefined; });
-        ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register({ name: 'conversation.composer.dock', id: 'newapi-provider-balance', order: 40 }, BalancePill));
+        ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({ name: 'sidebar.footer.action', id: 'newapi-provider-balance', order: 30, label: translate('nav') }, SidebarBalance));
         ctx.slots.inject('settings.section', () => {
           let dispose;
           const register = () => { dispose?.(); dispose = ctx.slots.register({ name: 'settings.section', id: 'newapi-provider', order: 19, label: translate('nav') }, SettingsPage); };
