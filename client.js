@@ -246,7 +246,7 @@ window.__ModuleLoader__.load({
       const uid = useRef(null);
       if (uid.current == null) uid.current = `nasv${++vendorSeq}`;
       const markup = key ? VENDOR_SVG[key].replace(/(id="|url\(#)([^")]+)/g, (_, p, id) => `${p}${uid.current}-${id}`) : null;
-      return h("span", { className: `nas-vendor-mark ${key ? "" : "unknown"}`, "data-tip": label, "data-tip-align": "start", tabIndex: 0, role: "img", "aria-label": label },
+      return h("span", { className: `nas-vendor-mark ${key ? "" : "unknown"}`, "data-tip": label, "data-tip-align": "start", role: "img", "aria-label": label },
         markup
           ? h("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "currentColor", fillRule: "evenodd", "aria-hidden": true, dangerouslySetInnerHTML: { __html: markup } })
           : h(Icon, { name: "grid", size: size - 2 }));
@@ -619,14 +619,14 @@ window.__ModuleLoader__.load({
       const quotaTip = [t(q.label), b?.token?.unlimited ? t('unlimited') : null, failed ? b?.message : null].filter(Boolean).join('\n');
       const label = `${ch.name}${ch.active ? ` · ${t('activeTip')}` : ''}`;
       return h('div', { className: `nas-ch-row ${ch.active ? 'is-active' : ''}`, role: 'listitem', 'aria-current': ch.active ? 'true' : undefined, 'aria-label': label },
-        h('span', { className: 'nas-ch-mark', 'data-tip': t(ch.active ? 'activeTip' : 'inactiveTip'), 'data-tip-align': 'start', tabIndex: 0 }, h(Icon, { name: ch.active ? 'check' : 'gateway', size: 15 })),
+        h('span', { className: 'nas-ch-mark', 'data-tip': t(ch.active ? 'activeTip' : 'inactiveTip'), 'data-tip-align': 'start' }, h(Icon, { name: ch.active ? 'check' : 'gateway', size: 15 })),
         h('div', { className: 'nas-ch-id' },
           h('strong', { className: 'nas-ch-name' }, ch.name),
           h('div', { className: 'nas-ch-url' }, ch.baseURL)),
-        h('div', { className: `nas-ch-quota ${failed ? 'bad' : ''}`, 'data-tip': quotaTip, tabIndex: 0 },
+        h('div', { className: `nas-ch-quota ${failed ? 'bad' : ''}`, 'data-tip': quotaTip },
           h('span', { className: 'nas-ch-amount' }, failed ? t('failed') : q.value),
           h('span', { className: 'nas-ch-quota-label' }, failed ? t('balanceUnavailable') : t(q.label))),
-        h('span', { className: `nas-ch-health ${health.tone}`, 'data-tip': health.tip, role: 'status', tabIndex: 0, 'aria-label': health.tip },
+        h('span', { className: `nas-ch-health ${health.tone}`, 'data-tip': health.tip, role: 'img', 'aria-label': health.tip },
           h(Icon, { name: health.icon, size: 15, spin: check.running }), health.text && h('span', null, health.text)),
         confirm
           ? h('div', { className: 'nas-ch-actions confirm', role: 'group', 'aria-label': t('deleteHint') },
@@ -694,7 +694,7 @@ window.__ModuleLoader__.load({
         r.firstByteMs != null ? `${t('firstByte')} ${(r.firstByteMs / 1000).toFixed(2)}s` : null,
         r.testedAt ? `${t('testedAt')} ${ago(r.testedAt)}` : null,
       ].filter(Boolean).join('\n');
-      return h('div', { className: 'nas-test-cell compact', title: detail, tabIndex: 0, 'aria-label': `${label} ${detail}` },
+      return h('div', { className: 'nas-test-cell compact', title: detail, 'aria-label': `${label} ${detail}` },
         h('span', { className: `nas-test-status ${pending ? 'pending' : r.ok ? 'ok' : 'bad'}` }, h('span', { className: 'nas-result-dot', 'aria-hidden': true }), label),
         h('span', { className: 'num' }, duration));
     }
@@ -900,18 +900,18 @@ window.__ModuleLoader__.load({
             return h('div', { key: m.id, className: `nas-model-row v2 ${m.hidden || m.availability === 'missing' ? 'nas-hide' : ''}` },
               h('div', { className: 'nas-model-identity' },
                 h(VendorIcon, { vendor: m.vendor, modelId: m.id }),
-                h('span', { className: 'nas-model-name', tabIndex: 0, 'data-tip': [m.name || m.id, m.id, t(m.kind), m.hidden ? t('hidden') : null, m.source?.overridden?.length ? t('overridden') : null].filter(Boolean).join('\n') }, m.name || m.id),
-                m.upstreamModel && m.upstreamModel !== m.id && h('span', { style: { display: 'inline-flex', color: 'var(--nas-sub)' }, 'data-tip': `${t('upstreamModel')}: ${m.upstreamModel}`, tabIndex: 0, role: 'img', 'aria-label': `${t('upstreamModel')}: ${m.upstreamModel}` }, h(Icon, { name: 'arrow', size: 12 })),
-                m.availability === 'missing' && h('span', { className: 'nas-status-mark', 'data-tip': t('missingBadge'), tabIndex: 0, role: 'img', 'aria-label': t('missingBadge') }, h(Icon, { name: 'alert', size: 13 }))),
-              h('div', { className: 'nas-model-cap compact', tabIndex: 0, 'data-tip-align': 'start', 'data-tip': [
+                h('span', { className: 'nas-model-name', 'data-tip': [m.name || m.id, m.id, t(m.kind), m.hidden ? t('hidden') : null, m.source?.overridden?.length ? t('overridden') : null].filter(Boolean).join('\n') }, m.name || m.id),
+                m.upstreamModel && m.upstreamModel !== m.id && h('span', { style: { display: 'inline-flex', color: 'var(--nas-sub)' }, 'data-tip': `${t('upstreamModel')}: ${m.upstreamModel}`, role: 'img', 'aria-label': `${t('upstreamModel')}: ${m.upstreamModel}` }, h(Icon, { name: 'arrow', size: 12 })),
+                m.availability === 'missing' && h('span', { className: 'nas-status-mark', 'data-tip': t('missingBadge'), role: 'img', 'aria-label': t('missingBadge') }, h(Icon, { name: 'alert', size: 13 }))),
+              h('div', { className: 'nas-model-cap compact', 'data-tip-align': 'start', 'data-tip': [
                 m.kind === 'chat' ? `${t('context')}: ${m.effectiveContextWindow} / ${t('maxOutput')}: ${m.effectiveMaxTokens}` : t(m.kind),
                 `${t('source')}: ${m.source?.modelsDev?.provider || t('defaults')} · ${t(m.source?.modelsDev ? m.source.modelsDev.match === 'prefix' ? 'originPrefix' : 'originExact' : 'originNone')}`,
                 m.source?.overridden?.length ? `${t('overridden')}: ${m.source.overridden.join(', ')}` : null,
               ].filter(Boolean).join('\n') },
                 m.kind === 'chat' ? h('span', { className: 'nas-cap-numbers' }, tokens(m.effectiveContextWindow), h('span', { className: 'nas-cap-divider' }, ' / '), tokens(m.effectiveMaxTokens)) : h('span', null, t(m.kind)),
                 h('span', { className: 'nas-cap-icons' },
-                  (m.input || []).filter((i) => i !== 'text').map((i) => h('span', { key: i, 'data-tip': `${t('inputModalities')}: ${t(i === 'image' ? 'inputImage' : i === 'video' ? 'inputVideo' : i === 'audio' ? 'inputAudio' : i)}`, tabIndex: 0, role: 'img', 'aria-label': i }, h(Icon, { name: i === 'pdf' ? 'document' : i, size: 12 }))),
-                  m.reasoning && h('span', { 'data-tip': t('reasoning'), tabIndex: 0, role: 'img', 'aria-label': t('reasoning') }, h(Icon, { name: 'bolt', size: 12 })))),
+                  (m.input || []).filter((i) => i !== 'text').map((i) => h('span', { key: i, 'data-tip': `${t('inputModalities')}: ${t(i === 'image' ? 'inputImage' : i === 'video' ? 'inputVideo' : i === 'audio' ? 'inputAudio' : i)}`, role: 'img', 'aria-label': i }, h(Icon, { name: i === 'pdf' ? 'document' : i, size: 12 }))),
+                  m.reasoning && h('span', { 'data-tip': t('reasoning'), role: 'img', 'aria-label': t('reasoning') }, h(Icon, { name: 'bolt', size: 12 })))),
               h(TestCell, { channelId: channel.id, model: m }),
               h('div', { className: 'nas-row-actions' },
                 h(Button, { small: true, className: 'nas-icon-btn', icon: running ? 'refresh' : 'gauge', 'aria-busy': running, tip: canTest ? modelTestTip : t('unsupportedTest'), tipAlign: 'end', disabled: running || !canTest, onClick: () => test(m) }),
@@ -934,8 +934,8 @@ window.__ModuleLoader__.load({
           h('div', null, h('div', null, task.model), h('div', { className: 'nas-sub' }, task.taskId), task.error && h('div', { className: 'nas-field-error' }, task.error)),
           h(Badge, { tone: task.status === 'completed' ? 'good' : task.status === 'failed' ? 'error' : 'active' }, t(task.status === 'failed' ? 'task_failed' : task.status), task.progress != null ? ` ${task.progress}%` : '')))),
         items.length ? h('div', { className: 'nas-gallery' }, items.flatMap((item) => [
-          ...(item.images || []).map((img) => h('figure', { key: img.id }, h('a', { href: apiUrl(`media/image/${img.id}`), target: '_blank', rel: 'noreferrer' }, h('img', { src: apiUrl(`media/image/${img.id}`), alt: item.prompt, loading: 'lazy' })), h('figcaption', null, item.model))),
-          ...(item.file ? [h('figure', { key: item.file.id }, h('video', { src: apiUrl(`media/video/${item.file.id}`), controls: true, preload: 'metadata' }), h('figcaption', null, item.model))] : []),
+          ...(item.images || []).map((img) => h('figure', { key: img.id }, h('a', { href: apiUrl(`media/image/${encodeURIComponent(img.id)}`), target: '_blank', rel: 'noreferrer' }, h('img', { src: apiUrl(`media/image/${encodeURIComponent(img.id)}`), alt: item.prompt, loading: 'lazy' })), h('figcaption', null, item.model))),
+          ...(item.file ? [h('figure', { key: item.file.id }, h('video', { src: apiUrl(`media/video/${encodeURIComponent(item.file.id)}`), controls: true, preload: 'metadata' }), h('figcaption', null, item.model))] : []),
         ])) : h(Empty, { title: t('generationEmpty'), detail: t('generationHint'), icon: 'image' }));
     }
     function SettingsPage() {
@@ -961,7 +961,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.2' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.3' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },
@@ -1023,9 +1023,9 @@ window.__ModuleLoader__.load({
         props.phase !== 'result' && h('div', { className: 'nas-sub' }, t('generating')),
         error && h(ErrorText, { text: error }),
         a.prompt && h('div', { className: 'nas-prompt' }, a.prompt),
-        isImage && value?.images?.length > 0 && h('div', { className: 'nas-preview' }, value.images.map((image) => h('a', { key: image.attachmentId, href: apiUrl(`media/image/${image.attachmentId}`), target: '_blank', rel: 'noreferrer' }, h('img', { src: apiUrl(`media/image/${image.attachmentId}`), alt: a.prompt || '' })))),
+        isImage && value?.images?.length > 0 && h('div', { className: 'nas-preview' }, value.images.map((image) => h('a', { key: image.attachmentId, href: apiUrl(`media/image/${encodeURIComponent(image.attachmentId)}`), target: '_blank', rel: 'noreferrer' }, h('img', { src: apiUrl(`media/image/${encodeURIComponent(image.attachmentId)}`), alt: a.prompt || '' })))),
         !isImage && task && h(Badge, { tone: task.status === 'completed' ? 'good' : 'active' }, t(task.status === 'failed' ? 'task_failed' : task.status), task.progress != null ? ` ${task.progress}%` : ''),
-        !isImage && media?.file && h('div', { className: 'nas-preview' }, h('video', { src: apiUrl(`media/video/${media.file.id}`), controls: true, preload: 'metadata' })),
+        !isImage && media?.file && h('div', { className: 'nas-preview' }, h('video', { src: apiUrl(`media/video/${encodeURIComponent(media.file.id)}`), controls: true, preload: 'metadata' })),
         !isImage && value?.tasks && h('div', { className: 'nas-sub' }, value.tasks.map((x) => `${x.model}: ${t(x.status === 'failed' ? 'task_failed' : x.status)}`).join(' · ')));
     }
     return {
