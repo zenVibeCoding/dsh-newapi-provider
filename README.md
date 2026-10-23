@@ -48,7 +48,7 @@ Legacy flat `baseURL` / `apiKeyEnv` settings are still readable and are migrated
 Each gateway keeps an independent list, even when two gateways point at the same site with the same token:
 
 - **Model capabilities tab** has a gateway picker; the active gateway is marked and its list edits apply to that gateway only.
-- **Fetch models** reads the gateway catalog and lets you add what you select; models the gateway no longer lists are shown separately and are never removed automatically.
+- **Fetch models** reads the gateway catalog with a search box plus status (new / added / removed upstream) and kind filters; filtering only changes what is listed, never the current selection. The list scrolls on its own and the action bar stays in view.
 - **Remove** only removes the model from this gateway; custom parameters can be kept and the removal can be undone briefly.
 - **Add manually** is for models the gateway can serve but does not list.
 - Gateways created in this version start with an empty list; channels saved before the feature existed stay in automatic mode (all gateway models) until their first edit, which materialises the list from what the gateway currently lists.

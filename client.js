@@ -67,6 +67,9 @@ window.__ModuleLoader__.load({
       discovering: '正在读取网关模型…', discoverFailed: '读取失败', statusEnabled: '已添加', statusNew: '新增', statusMissing: '网关已下架',
       selectAllNew: '全选新增', clearSelection: '清空选择', addSelected: '添加所选', removeMissing: '移除已下架', nothingNew: '网关没有新的模型',
       selectedCount: '已选', groupChat: '对话模型', groupImage: '生图模型', groupVideo: '视频模型', groupOther: '其他模型',
+      discoverSearch: '搜索模型 ID 或厂商', discoverStatus: '按状态筛选', discoverKind: '按类型筛选',
+      selectShown: '全选当前', resetFilter: '清除筛选', discoverNoMatch: '没有符合当前筛选的模型',
+      discoverShown: (shown, total, picked) => `显示 ${shown} / ${total}${picked ? ` · 已选 ${picked}` : ''}`,
       missingBadge: '网关已下架', customBadge: '手动添加', test: '测试', testingModel: '测试中', testOk: '可用', testFail: '失败',
       firstByte: '首包', total: '总耗时', testedAt: '测试于', neverTested: '未测试', testError: '测试失败',
       paidTitle: '这次测试会产生费用', paidImage: '将真实生成 1 张图片，按网关的生图价格计费。结果只显示在这里，不会保存为附件。',
@@ -142,6 +145,9 @@ window.__ModuleLoader__.load({
       discovering: 'Reading gateway models…', discoverFailed: 'Could not read models', statusEnabled: 'Added', statusNew: 'New', statusMissing: 'Removed upstream',
       selectAllNew: 'Select all new', clearSelection: 'Clear', addSelected: 'Add selected', removeMissing: 'Remove missing', nothingNew: 'No new models on the gateway',
       selectedCount: 'Selected', groupChat: 'Chat models', groupImage: 'Image models', groupVideo: 'Video models', groupOther: 'Other models',
+      discoverSearch: 'Search model ID or vendor', discoverStatus: 'Filter by status', discoverKind: 'Filter by kind',
+      selectShown: 'Select shown', resetFilter: 'Clear filters', discoverNoMatch: 'No models match these filters',
+      discoverShown: (shown, total, picked) => `Showing ${shown} of ${total}${picked ? ` · ${picked} selected` : ''}`,
       missingBadge: 'Removed upstream', customBadge: 'Added manually', test: 'Test', testingModel: 'Testing', testOk: 'Works', testFail: 'Failed',
       firstByte: 'First byte', total: 'Total', testedAt: 'Tested', neverTested: 'Not tested', testError: 'Test failed',
       paidTitle: 'This test is billed', paidImage: 'Generates 1 real image at the gateway\'s image price. The result is shown here only and not saved as an attachment.',
@@ -258,15 +264,22 @@ window.__ModuleLoader__.load({
       .nas-summary{display:grid;grid-template-columns:1.1fr 1fr .85fr;border:1px solid var(--nas-line);border-radius:11px;background:var(--nas-bg);margin-bottom:22px;overflow:hidden}.nas-stat{padding:16px 19px;min-width:0}.nas-stat+.nas-stat{border-left:1px solid var(--nas-line)}.nas-stat-label{font-size:11px;color:var(--nas-sub);margin-bottom:7px}.nas-stat-value{font-size:21px;font-variant-numeric:tabular-nums;line-height:1.3;letter-spacing:-.4px;overflow-wrap:anywhere}.nas-stat-value.name{font-size:17px;font-weight:600}.nas-stat-foot{font-size:11px;color:var(--nas-sub);margin-top:5px;overflow-wrap:anywhere}
       .nas-tabs{display:flex;gap:24px;border-bottom:1px solid var(--nas-line);margin-bottom:18px}.nas-tab{display:flex;align-items:center;gap:7px;padding:10px 1px 12px;background:transparent;border:0;border-bottom:2px solid transparent;color:var(--nas-sub);font-weight:500}.nas-tab.selected{color:var(--nas-text);border-bottom-color:var(--nas-brand)}.nas-count{font-size:10px;min-width:18px;padding:0 5px;background:var(--nas-raised);border-radius:4px;color:var(--nas-sub);font-variant-numeric:tabular-nums}.nas-section-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 15px}.nas-section-intro p{margin:0;color:var(--nas-sub);font-size:12px;max-width:660px}
       .nas-channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}.nas-channel{position:relative;border:1px solid var(--nas-line);border-radius:10px;background:var(--nas-bg);padding:16px;min-width:0;display:flex;flex-direction:column;gap:13px}.nas-channel.is-active{border-color:var(--nas-brand);box-shadow:inset 3px 0 var(--nas-brand)}.nas-channel-top{display:flex;align-items:center;gap:10px}.nas-channel-mark{width:34px;height:34px;border-radius:8px;background:var(--nas-raised);color:var(--nas-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0}.nas-channel.is-active .nas-channel-mark{color:var(--nas-brand)}.nas-channel-title{flex:1;min-width:0}.nas-channel-title strong{font-size:14px;font-weight:600;display:block;overflow-wrap:anywhere}.nas-url{font-size:11px;color:var(--nas-sub);overflow-wrap:anywhere;line-height:1.5}.nas-channel-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font-size:11px;color:var(--nas-sub)}.nas-dot{width:5px;height:5px;border-radius:50%;background:var(--nas-sub);display:inline-block;flex-shrink:0}.nas-dot.ok{background:var(--dsw-alias-state-success-primary)}.nas-dot.warn{background:var(--dsw-alias-state-warn-primary)}.nas-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;line-height:18px;border-radius:4px;padding:0 6px;background:var(--nas-raised);color:var(--nas-sub);white-space:nowrap}.nas-badge.active{color:var(--nas-brand);background:color-mix(in srgb,var(--nas-brand) 9%,transparent)}.nas-badge.warn{color:var(--dsw-alias-state-warn-primary)}.nas-badge.good{color:var(--dsw-alias-state-success-primary)}.nas-badge.error{color:var(--dsw-alias-state-error-primary)}.nas-channel-quota{font-size:19px;letter-spacing:-.3px;font-variant-numeric:tabular-nums}.nas-channel-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--nas-line);padding-top:12px;margin-top:auto;gap:10px}.nas-note{display:flex;gap:7px;align-items:flex-start;color:var(--nas-sub);font-size:11px;line-height:1.6;margin-top:14px}.nas-note svg{flex-shrink:0;margin-top:2px}.nas-empty{padding:36px 20px;border:1px dashed var(--nas-line);border-radius:10px;text-align:center;color:var(--nas-sub);font-size:13px}.nas-empty svg{display:block;margin:0 auto 10px}.nas-empty strong{display:block;color:var(--nas-text);font-weight:500;margin:8px 0}.nas-error{border:1px solid color-mix(in srgb,var(--dsw-alias-state-error-primary) 30%,transparent);color:var(--dsw-alias-state-error-primary);background:var(--nas-bg);padding:10px 12px;border-radius:7px;font-size:12px;overflow-wrap:anywhere;white-space:pre-wrap}.nas-feedback{display:flex;align-items:center;gap:7px;border:1px solid var(--nas-line);padding:9px 12px;border-radius:7px;color:var(--dsw-alias-state-success-primary);font-size:12px;margin-bottom:15px}
-      .nas-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}.nas-search{display:flex;align-items:center;gap:8px;flex:1;min-width:180px;border:1px solid var(--nas-line);background:var(--nas-bg);padding:0 10px;border-radius:7px;color:var(--nas-sub)}.nas-search input{border:0;outline:0;background:transparent;padding:7px 0;color:var(--nas-text);width:100%;font-size:12px;min-width:0}.nas-search:focus-within{border-color:var(--nas-brand)}.nas-filter{display:flex;gap:3px;flex-wrap:wrap}.nas-filter button{border:0;background:transparent;border-radius:5px;padding:5px 8px;color:var(--nas-sub);font-size:12px}.nas-filter button[aria-pressed=true]{background:var(--nas-raised);color:var(--nas-text)}.nas-models{border:1px solid var(--nas-line);border-radius:9px}.nas-model-head.v2{border-radius:8px 8px 0 0}.nas-model-row.v2:last-child{border-radius:0 0 8px 8px}.nas-model-head,.nas-model-row{display:grid;grid-template-columns:minmax(150px,1.25fr) minmax(150px,1.1fr) minmax(90px,.7fr) 32px;gap:16px;align-items:center;padding:11px 14px}.nas-model-head{background:var(--nas-raised);font-size:11px;color:var(--nas-sub);padding-top:8px;padding-bottom:8px}.nas-model-row+.nas-model-row{border-top:1px solid var(--nas-line)}.nas-model-row{background:var(--nas-bg)}.nas-model-name{font-weight:500;font-size:12px;overflow-wrap:anywhere;line-height:1.55}.nas-model-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.nas-model-cap{font-size:11px;color:var(--nas-sub)}.nas-model-cap strong{font-weight:550;color:var(--nas-text);font-variant-numeric:tabular-nums}.nas-model-source{font-size:11px;color:var(--nas-sub)}.nas-hide{opacity:.6}.nas-model-sub{font-size:10px;color:var(--nas-sub);margin-top:2px}.nas-settings-foot{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;color:var(--nas-sub);font-size:10px;border-top:1px solid var(--nas-line);padding-top:12px;margin-top:22px}.nas-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}.nas-gallery figure{margin:0;border:1px solid var(--nas-line);border-radius:8px;overflow:hidden}.nas-gallery img,.nas-gallery video{display:block;width:100%;height:150px;object-fit:contain;background:var(--nas-raised)}.nas-gallery figcaption{padding:8px;font-size:11px;color:var(--nas-sub);overflow-wrap:anywhere}.nas-task{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--nas-line)}
+      .nas-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}.nas-search{display:flex;align-items:center;gap:8px;flex:1;min-width:180px;border:1px solid var(--nas-line);background:var(--nas-bg);padding:0 10px;border-radius:7px;color:var(--nas-sub)}.nas-search input{border:0;outline:0;background:transparent;padding:7px 0;color:var(--nas-text);width:100%;font-size:12px;min-width:0}.nas-search:focus-within{border-color:var(--nas-brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--nas-brand) 14%,transparent)}.nas-search input:focus,.nas-search input:focus-visible{outline:0}.nas-filter{display:flex;gap:3px;flex-wrap:wrap}.nas-filter button{border:0;background:transparent;border-radius:5px;padding:5px 8px;color:var(--nas-sub);font-size:12px}.nas-filter button[aria-pressed=true]{background:var(--nas-raised);color:var(--nas-text)}.nas-models{border:1px solid var(--nas-line);border-radius:9px}.nas-model-head.v2{border-radius:8px 8px 0 0}.nas-model-row.v2:last-child{border-radius:0 0 8px 8px}.nas-model-head,.nas-model-row{display:grid;grid-template-columns:minmax(150px,1.25fr) minmax(150px,1.1fr) minmax(90px,.7fr) 32px;gap:16px;align-items:center;padding:11px 14px}.nas-model-head{background:var(--nas-raised);font-size:11px;color:var(--nas-sub);padding-top:8px;padding-bottom:8px}.nas-model-row+.nas-model-row{border-top:1px solid var(--nas-line)}.nas-model-row{background:var(--nas-bg)}.nas-model-name{font-weight:500;font-size:12px;overflow-wrap:anywhere;line-height:1.55}.nas-model-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.nas-model-cap{font-size:11px;color:var(--nas-sub)}.nas-model-cap strong{font-weight:550;color:var(--nas-text);font-variant-numeric:tabular-nums}.nas-model-source{font-size:11px;color:var(--nas-sub)}.nas-hide{opacity:.6}.nas-model-sub{font-size:10px;color:var(--nas-sub);margin-top:2px}.nas-settings-foot{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;color:var(--nas-sub);font-size:10px;border-top:1px solid var(--nas-line);padding-top:12px;margin-top:22px}.nas-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}.nas-gallery figure{margin:0;border:1px solid var(--nas-line);border-radius:8px;overflow:hidden}.nas-gallery img,.nas-gallery video{display:block;width:100%;height:150px;object-fit:contain;background:var(--nas-raised)}.nas-gallery figcaption{padding:8px;font-size:11px;color:var(--nas-sub);overflow-wrap:anywhere}.nas-task{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--nas-line)}
       .nas-dialog{max-width:580px;width:calc(100% - 40px);max-height:calc(100vh - 64px);border:1px solid var(--nas-line);border-radius:12px;background:var(--dsw-alias-bg-overlay);color:var(--nas-text);padding:0;overflow:auto;box-shadow:0 16px 60px color-mix(in srgb,var(--dsw-alias-label-primary) 16%,transparent)}.nas-dialog::backdrop{background:color-mix(in srgb,var(--dsw-alias-bg-base) 60%,transparent);backdrop-filter:blur(3px)}.nas-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px 14px}.nas-dialog-head h3{margin:0 0 5px;font-size:17px;font-weight:600}.nas-dialog-body{padding:4px 24px 20px}.nas-dialog-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:14px 24px;border-top:1px solid var(--nas-line);background:var(--nas-bg)}.nas-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;font-size:12px}.nas-field>label{font-weight:500}.nas-field small{font-size:11px;color:var(--nas-sub);font-weight:400}.nas-field input:not([type=checkbox]),.nas-field select{width:100%;height:35px;border:1px solid var(--nas-line);border-radius:6px;background:var(--nas-bg);color:var(--nas-text);padding:6px 10px;min-width:0;outline:none}.nas-field input:focus,.nas-field select:focus{border-color:var(--nas-brand)}.nas-fieldset{border:0;padding:0;margin:0 0 16px}.nas-fieldset legend{font-weight:500;font-size:12px;margin-bottom:8px}.nas-checks{display:flex;gap:12px;flex-wrap:wrap}.nas-check{display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;color:var(--nas-text);font-weight:400}.nas-check input{accent-color:var(--nas-brand);width:14px;height:14px;margin:0}.nas-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.nas-field-error{color:var(--dsw-alias-state-error-primary);font-size:11px}.nas-test{border:1px solid var(--nas-line);border-radius:7px;padding:11px 12px;font-size:12px;margin-top:12px}.nas-test.ok strong{color:var(--dsw-alias-state-success-primary)}.nas-test.bad{color:var(--dsw-alias-state-error-primary)}.nas-test small{display:block;color:var(--nas-sub);margin-top:3px}.nas-prompt{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--nas-sub);margin-top:8px}.nas-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--nas-sub);background:transparent;border:1px solid var(--nas-line);border-radius:7px;padding:2px 8px;cursor:pointer}.nas-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.nas-preview img,.nas-preview video{display:block;max-width:100%;max-height:280px;border-radius:8px;border:1px solid var(--nas-line)}.nas-spin{animation:nas-spin .9s linear infinite}@keyframes nas-spin{to{transform:rotate(360deg)}}
-      @media(max-width:760px){.nas-head{flex-direction:column;gap:12px}.nas-head h2{font-size:20px}.nas-stat{padding:13px}.nas-stat-value{font-size:18px}.nas-summary{grid-template-columns:1fr 1fr}.nas-stat:last-child{grid-column:1/-1;border-left:0;border-top:1px solid var(--nas-line)}.nas-model-head,.nas-model-row{grid-template-columns:minmax(110px,1fr) minmax(140px,1fr) 29px;gap:10px;padding:10px}.nas-model-head>:nth-child(3),.nas-model-row>.nas-model-source{display:none}.nas-tabs{gap:18px}.nas-two{grid-template-columns:1fr;gap:0}.nas-dialog-head{padding:18px 18px 12px}.nas-dialog-body{padding:4px 18px 16px}.nas-dialog-foot{padding:12px 18px}}
+      @media(max-width:760px){.nas-head{flex-direction:column;gap:12px}.nas-head h2{font-size:20px}.nas-stat{padding:13px}.nas-stat-value{font-size:18px}.nas-summary{grid-template-columns:1fr 1fr}.nas-stat:last-child{grid-column:1/-1;border-left:0;border-top:1px solid var(--nas-line)}.nas-model-head,.nas-model-row{grid-template-columns:minmax(110px,1fr) minmax(140px,1fr) 29px;gap:10px;padding:10px}.nas-model-head>:nth-child(3),.nas-model-row>.nas-model-source{display:none}.nas-tabs{gap:18px}.nas-two{grid-template-columns:1fr;gap:0}.nas-dialog-head{padding:18px 18px 12px}.nas-dialog-body{padding:4px 18px 16px}.nas-dialog-foot{padding:12px 18px}.nas-discover .nas-dialog-body{padding:0 18px}}
       .nas-model-head.v2,.nas-model-row.v2{grid-template-columns:minmax(160px,1.3fr) minmax(150px,1.1fr) minmax(120px,.85fr) auto}.nas-row-actions{display:flex;align-items:center;gap:2px;justify-content:flex-end}.nas-row-actions .nas-btn{border-color:transparent;background:transparent}.nas-row-actions .nas-btn:hover{border-color:var(--nas-line);background:var(--nas-raised)}
       .nas-test-cell{font-size:11px;color:var(--nas-sub);line-height:1.5;min-width:0}.nas-test-cell .ok{color:var(--dsw-alias-state-success-primary)}.nas-test-cell .bad{color:var(--dsw-alias-state-error-primary)}.nas-test-cell .num{font-variant-numeric:tabular-nums;color:var(--nas-text)}.nas-test-err{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
       .nas-mode{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--nas-line);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--nas-sub);margin-bottom:12px;background:var(--nas-bg)}.nas-mode svg{flex-shrink:0;margin-top:2px}
       .nas-toast{position:sticky;bottom:12px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--nas-line);background:var(--dsw-alias-bg-overlay);border-radius:9px;padding:9px 12px;font-size:12px;box-shadow:0 6px 24px color-mix(in srgb,var(--dsw-alias-label-primary) 10%,transparent);z-index:2}
       .nas-progress{height:3px;border-radius:2px;background:var(--nas-raised);overflow:hidden;margin:6px 0 2px}.nas-progress>i{display:block;height:100%;background:var(--nas-brand);transition:width .2s}
-      .nas-dialog.wide{max-width:760px}.nas-discover-group{margin-bottom:16px}.nas-discover-group h4{font-size:12px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:8px}.nas-discover-list{border:1px solid var(--nas-line);border-radius:8px;overflow:hidden}.nas-discover-item{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 11px;font-size:12px;cursor:pointer}.nas-discover-item+.nas-discover-item{border-top:1px solid var(--nas-line)}.nas-discover-item:hover{background:var(--nas-raised)}.nas-discover-item.disabled{cursor:default;opacity:.62}.nas-discover-item.disabled:hover{background:transparent}.nas-discover-item input{accent-color:var(--nas-brand);margin:0;width:14px;height:14px}.nas-discover-meta{font-size:10px;color:var(--nas-sub);overflow-wrap:anywhere}
+      .nas-dialog.wide{max-width:760px}
+      /* Model discovery: fixed toolbar and action bar, one scrolling result list. */
+      .nas-dialog.nas-discover{display:flex;flex-direction:column;overflow:hidden;max-width:820px}
+      .nas-discover .nas-dialog-head{flex-shrink:0;padding-bottom:12px}
+      .nas-discover .nas-dialog-body{display:flex;flex-direction:column;gap:9px;flex:1 1 auto;min-height:0;overflow:hidden;padding:0 24px}
+      .nas-discover .nas-dialog-foot{flex-shrink:0}
+      .nas-discover-tools{display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+      .nas-discover-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;min-height:22px}
       .nas-preview-test img{max-width:220px;max-height:220px;border-radius:8px;border:1px solid var(--nas-line);display:block;margin-top:8px}
       /* Compact model list: identity / capacity / connectivity / actions. */
       .nas-models{container-type:inline-size}.nas-model-head.v2,.nas-model-row.v2{grid-template-columns:minmax(120px,1fr) minmax(110px,.75fr) 96px 84px;gap:12px;padding:10px 12px}.nas-model-row.v2{min-height:48px}.nas-model-head.v2{font-size:10px;padding-top:8px;padding-bottom:8px}.nas-model-head.v2>:nth-child(3){display:block}.nas-model-identity{display:flex;align-items:center;gap:9px;min-width:0}.nas-vendor-mark{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;color:var(--nas-text);flex-shrink:0}.nas-vendor-mark>svg{display:block}.nas-vendor-mark.unknown{color:var(--nas-sub);opacity:.7}.nas-model-row.v2 .nas-model-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;line-height:1.5;font-weight:500;letter-spacing:-.1px}.nas-status-mark{color:var(--dsw-alias-state-warn-primary);display:inline-flex;flex-shrink:0}.nas-model-cap.compact{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10px;line-height:1.5}.nas-cap-numbers{font-variant-numeric:tabular-nums;color:var(--nas-text);white-space:nowrap;font-weight:500}.nas-cap-divider{color:var(--nas-sub);font-weight:400}.nas-cap-icons{display:inline-flex;align-items:center;gap:5px;color:var(--nas-sub)}.nas-cap-icons>span{display:inline-flex}.nas-test-cell.compact{display:flex;align-items:center;gap:7px;white-space:nowrap;line-height:1.5;font-size:11px}.nas-test-status{display:inline-flex;align-items:center;gap:4px}.nas-test-status.pending{color:var(--dsw-alias-state-warn-primary)}.nas-result-dot{width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block}.nas-model-row.v2 .nas-row-actions{gap:0}.nas-model-row.v2 .nas-row-actions .nas-btn{min-width:28px;width:28px;min-height:28px;padding:4px}
@@ -313,6 +326,35 @@ window.__ModuleLoader__.load({
       .nas-model-channel.selected{color:var(--nas-text);border-color:var(--dsw-alias-border-l2);background:var(--nas-raised);font-weight:500}
       .nas-model-channel.is-active svg{color:var(--nas-accent)}
       .nas-mode.warn{color:var(--dsw-alias-state-warn-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 30%,var(--nas-line))}
+      /* Model discovery: same visual language as the model table. */
+      .nas-dialog.nas-discover{max-width:760px;background:var(--nas-bg)}
+      .nas-discover .nas-dialog-head{padding-bottom:14px}
+      .nas-discover .nas-dialog-body{display:flex;flex-direction:column;gap:10px;min-height:0}
+      .nas-discover-tools{display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+      .nas-discover-scroll{border:1px solid var(--nas-line);border-radius:9px;background:var(--dsw-alias-bg-base);max-height:min(48vh,420px);overflow:auto;overscroll-behavior:contain}
+      .nas-dlist{padding:2px 0}
+      .nas-dgroup{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:10px;letter-spacing:.04em;color:var(--nas-sub);background:var(--nas-raised);border-bottom:1px solid var(--nas-line)}
+      .nas-dgroup:not(:first-child){border-top:1px solid var(--nas-line)}
+      .nas-drow{display:grid;grid-template-columns:16px 18px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 12px;font-size:12px;cursor:pointer;line-height:1.45}
+      .nas-drow+.nas-drow{border-top:1px solid var(--nas-line)}
+      .nas-drow:hover{background:color-mix(in srgb,var(--nas-raised) 60%,transparent)}
+      .nas-drow.locked{cursor:default}
+      .nas-drow.locked:hover{background:transparent}
+      .nas-drow.locked .nas-drow-id{color:var(--nas-sub);font-weight:400}
+      .nas-drow input{accent-color:var(--nas-accent);width:14px;height:14px;margin:0}
+      .nas-drow.on{background:color-mix(in srgb,var(--nas-accent) 4%,transparent)}
+      .nas-drow-mark{display:inline-flex;align-items:center;justify-content:center;color:var(--dsw-alias-state-warn-primary)}
+      .nas-drow-main{min-width:0}
+      .nas-drow-id{display:flex;align-items:center;gap:6px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .nas-drow-id>span{overflow:hidden;text-overflow:ellipsis}
+      .nas-drow-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--nas-sub);margin-top:1px}
+      .nas-drow-kind{padding:0 5px;border-radius:4px;background:var(--nas-raised);line-height:16px}
+      .nas-drow-num{font-variant-numeric:tabular-nums}
+      .nas-drow-meta .nas-cap-icons{gap:4px}
+      .nas-discover-blank{display:flex;flex-direction:column;align-items:center;gap:8px;padding:34px 16px;color:var(--nas-sub);font-size:12px;text-align:center}
+      .nas-skeleton{display:flex;flex-direction:column;gap:9px;padding:16px 12px}
+      .nas-skeleton>i{display:block;height:14px;border-radius:5px;background:var(--nas-raised);animation:nas-pulse 1.2s ease-in-out infinite}
+      @keyframes nas-pulse{50%{opacity:.45}}
       /* Tooltips: instant, themed, keyboard accessible. */
       .nas [data-tip]{position:relative}
       .nas [data-tip]::after{content:attr(data-tip);position:absolute;z-index:60;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);width:max-content;max-width:270px;padding:6px 9px;border-radius:7px;border:1px solid var(--nas-line);background:var(--dsw-alias-bg-overlay);color:var(--nas-text);font-size:11px;font-weight:400;line-height:1.55;text-align:left;white-space:pre-line;box-shadow:0 8px 24px color-mix(in srgb,var(--dsw-alias-label-primary) 16%,transparent);opacity:0;pointer-events:none;transition:opacity .12s}
@@ -745,9 +787,19 @@ window.__ModuleLoader__.load({
         h('div', { className: 'nas-progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': models.length, 'aria-valuenow': state.done }, h('i', { style: { width: `${pct}%` } })),
         h('div', { className: 'nas-sub', role: 'status' }, state.finished ? tf('batchDone', state.ok, state.fail) : tf('batchProgress', state.done, models.length))));
     }
+    /**
+     * Adds gateway models to one channel. A gateway can list hundreds of models,
+     * so the dialog keeps its toolbar and action bar fixed and scrolls only the
+     * results. Filtering never drops the current selection: the pick set is
+     * keyed by id and survives every status/kind/search change.
+     */
     function DiscoverDialog({ channel, revision, onClose, onDone }) {
       const t = useT(); const [data, setData] = useState(); const [error, setError] = useState('');
       const [picked, setPicked] = useState(() => new Set()); const a = useAction();
+      const [search, setSearch] = useState(''); const [status, setStatus] = useState('all'); const [kind, setKind] = useState('all');
+      const searchRef = useRef();
+      // The catalog usually lands after the dialog mounts, so the field cannot rely on autofocus.
+      useEffect(() => { if (data) searchRef.current?.focus(); }, [data]);
       useEffect(() => {
         let alive = true;
         api('models/discover', { channelId: channel.id }).then((d) => {
@@ -758,39 +810,92 @@ window.__ModuleLoader__.load({
         return () => { alive = false; };
       }, [channel.id]);
       const toggle = (id) => setPicked((old) => { const next = new Set(old); if (next.has(id)) next.delete(id); else next.add(id); return next; });
-      const groups = data ? [['chat', 'groupChat'], ['image', 'groupImage'], ['video', 'groupVideo'], ['other', 'groupOther']].map(([k, label]) => [label, data.models.filter((m) => (k === 'other' ? !['chat', 'image', 'video'].includes(m.kind) : m.kind === k))]).filter(([, list]) => list.length) : [];
-      const newIds = data ? data.models.filter((m) => m.status === 'new').map((m) => m.id) : [];
       const missing = data?.missing ?? [];
+      // Models the gateway dropped stay in the same list, marked, so the user decides.
+      // Their kind is unknown, so they sit outside the kind chips and only answer to the status chip.
+      const rows = data ? [...data.models, ...missing.map((m) => ({ id: m.id, kind: 'missing', status: 'missing', custom: m.custom }))] : [];
+      const byStatus = { all: rows.length, new: 0, enabled: 0, missing: 0 };
+      const byKind = {};
+      for (const m of rows) { byStatus[m.status] += 1; byKind[m.kind] = (byKind[m.kind] ?? 0) + 1; }
+      // Every kind the gateway returns needs a chip, including audio and embedding;
+      // a fixed list would silently hide those models from filtering.
+      const kindOrder = ['chat', 'image', 'video', 'audio', 'embedding', 'other'];
+      const byKindValues = [...kindOrder.filter((k) => byKind[k] > 0), ...Object.keys(byKind).filter((k) => !kindOrder.includes(k))];
+      const query = search.trim().toLowerCase();
+      const statusRank = { new: 0, enabled: 1, missing: 2 }; const kindRank = { chat: 0, image: 1, video: 2, audio: 3, embedding: 4, other: 5 };
+      // New models first, then what the channel already has, then what the gateway dropped.
+      const shown = rows
+        .filter((m) => (status === 'all' || m.status === status) && (kind === 'all' || m.kind === kind)
+          && (!query || `${m.id} ${m.vendor ?? ''}`.toLowerCase().includes(query)))
+        .sort((x, y) => statusRank[x.status] - statusRank[y.status] || (kindRank[x.kind] ?? 9) - (kindRank[y.kind] ?? 9) || x.id.localeCompare(y.id));
+      const selectable = shown.filter((m) => m.status === 'new' && !picked.has(m.id));
+      const droppable = missing.filter((m) => !m.custom);
+      const filtered = Boolean(query) || status !== 'all' || kind !== 'all';
+      const reset = () => { setSearch(''); setStatus('all'); setKind('all'); };
       const add = () => a.run(async () => { await store.mutate('models/set', { revision, channelId: channel.id, add: [...picked] }); onDone(tf('addedModels', picked.size)); });
-      const dropMissing = () => a.run(async () => { await store.mutate('models/set', { revision, channelId: channel.id, remove: missing.filter((m) => !m.custom).map((m) => m.id) }); onDone(tf('removedMissing', missing.filter((m) => !m.custom).length)); });
-      return h(Modal, { title: t('discoverTitle'), hint: `${channel.name} · ${t('discoverHint')}`, onClose, busy: a.pending, wide: true,
+      const dropMissing = () => a.run(async () => { await store.mutate('models/set', { revision, channelId: channel.id, remove: droppable.map((m) => m.id) }); onDone(tf('removedMissing', droppable.length)); });
+      const statusLabel = { all: 'all', new: 'statusNew', enabled: 'statusEnabled', missing: 'statusMissing' };
+      const chips = (values, counts, current, onPick, label) => h('div', { className: 'nas-filter', role: 'group', 'aria-label': label },
+        values.map((k) => h('button', { key: k, type: 'button', 'aria-pressed': current === k, onClick: () => onPick(k) },
+          t(statusLabel[k] ?? k), ' ', h('span', { className: 'nas-count' }, k === 'all' ? rows.length : counts[k] ?? 0))));
+      return h(Modal, { title: t('discoverTitle'), hint: `${channel.name} · ${t('discoverHint')}`, onClose, busy: a.pending, className: 'nas-discover',
         footer: h(React.Fragment, null,
           h('div', { className: 'nas-actions' },
-            newIds.length > 0 && h(Button, { small: true, tone: 'ghost', onClick: () => setPicked(new Set(newIds)) }, t('selectAllNew')),
-            picked.size > 0 && h(Button, { small: true, tone: 'ghost', onClick: () => setPicked(new Set()) }, t('clearSelection')),
-            missing.some((m) => !m.custom) && h(Button, { small: true, tone: 'danger', onClick: dropMissing, disabled: a.pending }, `${t('removeMissing')} (${missing.filter((m) => !m.custom).length})`)),
+            droppable.length > 0 && h(Button, { small: true, tone: 'danger', onClick: dropMissing, disabled: a.pending }, `${t('removeMissing')} (${droppable.length})`),
+            selectable.length > 0 && h(Button, { small: true, tone: 'ghost', onClick: () => setPicked((old) => new Set([...old, ...selectable.map((m) => m.id)])), disabled: a.pending }, `${t('selectShown')} (${selectable.length})`),
+            picked.size > 0 && h(Button, { small: true, tone: 'ghost', onClick: () => setPicked(new Set()), disabled: a.pending }, t('clearSelection'))),
           h('div', { className: 'nas-actions' },
             h(Button, { onClick: onClose, disabled: a.pending }, t('cancel')),
             h(Button, { tone: 'primary', icon: 'plus', onClick: add, disabled: a.pending || !picked.size }, `${t('addSelected')}${picked.size ? ` (${picked.size})` : ''}`))),
       },
-      !data && !error && h('div', { className: 'nas-sub', role: 'status' }, h(Icon, { name: 'refresh', size: 13, spin: true }), ` ${t('discovering')}`),
+      !data && !error && h(React.Fragment, null,
+        h('div', { className: 'nas-sub', role: 'status' }, h(Icon, { name: 'refresh', size: 13, spin: true }), ` ${t('discovering')}`),
+        h('div', { className: 'nas-discover-scroll', 'aria-hidden': true },
+          h('div', { className: 'nas-skeleton' }, [93, 72, 86, 64, 79].map((w, i) => h('i', { key: i, style: { width: `${w}%` } }))))),
       error && h(ErrorText, { text: `${t('discoverFailed')}: ${error}` }),
-      data && !newIds.length && !missing.length && h('div', { className: 'nas-mode' }, h(Icon, { name: 'check', size: 14 }), t('nothingNew')),
-      h(ErrorText, { text: a.error }),
-      missing.length > 0 && h('div', { className: 'nas-discover-group' },
-        h('h4', null, t('statusMissing'), h('span', { className: 'nas-count' }, missing.length)),
-        h('div', { className: 'nas-discover-list' }, missing.map((m) => h('div', { key: m.id, className: 'nas-discover-item disabled' },
-          h(Icon, { name: 'alert', size: 13 }), h('div', null, h('div', null, m.id)), h(Badge, { tone: m.custom ? '' : 'warn' }, t(m.custom ? 'customBadge' : 'missingBadge')))))),
-      groups.map(([label, list]) => h('div', { key: label, className: 'nas-discover-group' },
-        h('h4', null, t(label), h('span', { className: 'nas-count' }, list.length)),
-        h('div', { className: 'nas-discover-list' }, list.map((m) => {
-          const enabled = m.status === 'enabled';
-          return h('label', { key: m.id, className: `nas-discover-item ${enabled ? 'disabled' : ''}` },
-            h('input', { type: 'checkbox', checked: enabled || picked.has(m.id), disabled: enabled || a.pending, onChange: () => toggle(m.id) }),
-            h('div', null, h('div', null, m.id),
-              h('div', { className: 'nas-discover-meta' }, [m.vendor, m.kind === 'chat' && m.contextWindow ? `${tokens(m.contextWindow)} ${t('context')}` : null, (m.input || []).filter((i) => i !== 'text').map((i) => t(i === 'image' ? 'inputImage' : i === 'video' ? 'inputVideo' : i === 'audio' ? 'inputAudio' : i)).join(' / ') || null].filter(Boolean).join(' · '))),
-            h(Badge, { tone: enabled ? '' : 'good' }, t(enabled ? 'statusEnabled' : 'statusNew')));
-        })))));
+      data && h(React.Fragment, null,
+        h('div', { className: 'nas-discover-tools' },
+          h('label', { className: 'nas-search' }, h(Icon, { name: 'search', size: 14 }),
+            h('input', { ref: searchRef, value: search, 'data-autofocus': true, spellCheck: false, placeholder: t('discoverSearch'), 'aria-label': t('discoverSearch'), onChange: (e) => setSearch(e.target.value) })),
+          h('div', { className: 'nas-discover-bar' },
+            chips(['all', 'new', 'enabled', 'missing'].filter((k) => k === 'all' || byStatus[k] > 0), byStatus, status, setStatus, t('discoverStatus')),
+            h('span', { className: 'nas-sub', role: 'status', 'aria-live': 'polite' }, tf('discoverShown', shown.length, rows.length, picked.size))),
+          byKindValues.length > 1 && h('div', { className: 'nas-discover-bar' },
+            chips(byKindValues, byKind, kind, setKind, t('discoverKind')))),
+        rows.length > 0 && !byStatus.new && h('div', { className: 'nas-mode' }, h(Icon, { name: 'check', size: 14 }), t('nothingNew')),
+        h(ErrorText, { text: a.error }),
+        h('div', { className: 'nas-discover-scroll' },
+          !shown.length
+            ? h('div', { className: 'nas-discover-blank', role: 'status' },
+              h(Icon, { name: rows.length ? 'search' : 'grid', size: 20 }),
+              h('span', null, t(rows.length ? 'discoverNoMatch' : 'nothingNew')),
+              filtered && h(Button, { small: true, tone: 'ghost', onClick: reset }, t('resetFilter')))
+            : h('div', { className: 'nas-dlist' }, shown.map((m, index) => {
+              const enabled = m.status === 'enabled'; const gone = m.status === 'missing'; const on = enabled || picked.has(m.id);
+              const kindLabel = gone ? t('missingBadge') : t(m.kind);
+              // A kind group header keeps a long gateway list readable.
+              const header = (kind === 'all' && status === 'all' && !query && (index === 0 || shown[index - 1].kind !== m.kind))
+                ? h('div', { className: 'nas-dgroup', key: `g-${m.kind}` }, h('span', null, t(m.kind === 'missing' ? 'statusMissing' : m.kind)), h('span', { className: 'nas-count' }, byKind[m.kind] ?? 0))
+                : null;
+              const badges = gone
+                ? h(Badge, { tone: m.custom ? '' : 'warn' }, t(m.custom ? 'customBadge' : 'missingBadge'))
+                : enabled ? h(Badge, null, t('statusEnabled')) : h(Badge, { tone: on ? 'good' : '' }, t('statusNew'));
+              return h(React.Fragment, { key: m.id },
+                header,
+                h('label', { className: `nas-drow ${on && !enabled ? 'on' : ''} ${enabled || gone ? 'locked' : ''}` },
+                  h('input', { type: 'checkbox', checked: on, disabled: enabled || gone || a.pending, onChange: () => toggle(m.id) }),
+                  gone ? h('span', { className: 'nas-drow-mark warn' }, h(Icon, { name: 'alert', size: 13 })) : h(VendorIcon, { vendor: m.vendor, modelId: m.id, size: 16 }),
+                  h('div', { className: 'nas-drow-main' },
+                    h('div', { className: 'nas-drow-id' }, h('span', null, m.id)),
+                    h('div', { className: 'nas-drow-meta' },
+                      !gone && m.vendor && h('span', null, m.vendor),
+                      !gone && h('span', { className: 'nas-drow-kind' }, kindLabel),
+                      !gone && m.kind === 'chat' && m.contextWindow && h('span', { className: 'nas-drow-num' }, tokens(m.contextWindow)),
+                      !gone && (m.input || []).some((i) => i !== 'text') && h('span', { className: 'nas-cap-icons' },
+                        (m.input || []).filter((i) => i !== 'text').map((i) => h('span', { key: i, 'data-tip': `${t('inputModalities')}: ${t(i === 'image' ? 'inputImage' : i === 'video' ? 'inputVideo' : i === 'audio' ? 'inputAudio' : i)}` }, h(Icon, { name: i === 'pdf' ? 'document' : i, size: 11 })))),
+                      !gone && m.reasoning && h('span', { className: 'nas-cap-icons' }, h('span', { 'data-tip': t('reasoning') }, h(Icon, { name: 'bolt', size: 11 })))))),
+                  badges);
+            })))));
     }
     function RemoveDialog({ channel, model, revision, onClose, onDone }) {
       const t = useT(); const [keep, setKeep] = useState(true); const a = useAction();
@@ -961,7 +1066,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.4' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.5' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },
