@@ -2,7 +2,10 @@
 
 English · [中文](README.zh.md)
 
-A New API gateway workbench for DeepSeek Harness: several gateways with one active at a time, per-gateway model lists and parameter overrides, quota, and image and experimental video generation. **Development build; not published to npm yet.**
+A New API gateway workbench for DeepSeek Harness: several gateways with one active at a time, per-gateway model lists and parameter overrides, quota, and image and experimental video generation.
+
+[![npm](https://img.shields.io/npm/v/dsh-newapi-provider.svg)](https://www.npmjs.com/package/dsh-newapi-provider)
+[![license](https://img.shields.io/npm/l/dsh-newapi-provider.svg)](LICENSE)
 
 ![Settings → New API Provider: gateways and connections](docs/screenshots/channels.png)
 
@@ -16,54 +19,52 @@ A New API gateway workbench for DeepSeek Harness: several gateways with one acti
 
 The screenshots render this plugin's real components and stylesheet with sample data; gateway names, URLs and amounts are examples. The UI follows the DSH theme, so colours adapt to your skin and dark mode.
 
+## Install
+
+Requires **DSH 0.2.1-rc.1 or newer** (verified on 0.2.1-rc.2) and Node.js 22.19+.
+
+Install `dsh-newapi-provider` with DSH's plugin manager, then refresh the page and open **Settings → New API Provider**. No separate web server is needed.
+
+1. **Add gateway** — name, New API site URL, calling token.
+2. **Fetch models** — read what the gateway lists, select the ones you want.
+3. **Activate the gateway** — this plugin's model route now serves those models.
+
+The token is stored in the DSH credential service, never in the gateway configuration, and is never sent back to the browser.
+
 ## Features
 
-- Save multiple gateways and activate exactly one. Each keeps its own URL, credential reference, model list and model overrides.
+- Several gateways, exactly one active; each keeps its own URL, credential reference, model list and model overrides.
 - Channel-scoped model management: fetch what a gateway lists, choose which models appear in DSH, test one model, remove with undo, add models the gateway does not list.
 - Capability data from models.dev (context window, output cap, modalities, reasoning), correctable per model, with an optional per-model upstream name mapping.
-- Token quota plus account balance when the token is allowed to query it; unlimited tokens show used quota instead of a negative remainder.
-- Generate images as durable DSH attachments; experimental video through the unified `/v1/videos` interface with background polling and restart recovery.
+- Token quota in the settings summary and at the sidebar foot, plus the account balance when the token is allowed to query it.
+- Image generation saved as durable DSH attachments with a generation history; experimental video through the unified `/v1/videos` interface with background polling and restart recovery.
 
-## Requirements and local installation
+## Gateways and quota
 
-Verified runtime: **DSH 0.2.1-rc.2**, Node.js 22.19+. Install the local project directory with DSH's plugin manager, refresh the page, then open **Settings → New API Provider**. No separate web server is needed. Do not install this name from npm before it is published.
+1. **Test connection** reads the model list only and does not make paid model calls; it also shows the gateway version and model counts.
+2. **Activate** switches every subsequent call made through this plugin, or tick "activate after saving".
+3. Switching never rewrites other adapters or your default provider.
+4. Submitted video tasks keep their originating gateway and are never polled on a newly activated one.
 
-This replaces, rather than depends on, `dsh-gateway-provider`; two adapters cannot own the same provider route. The development installation uses the `newapi-provider` route.
-
-## Migrating from the former name (v0.7.0)
-
-The plugin was called `dsh-newapi-studio`. The rename covers the package, the loader row and provider route (`newapi-provider`), the HTTP prefix (`/newapi-provider/api/`) and the data directory (`plugin-data/dsh-newapi-provider`).
-
-To migrate an existing installation, back up the profile patch and plugin data, then keep each channel's id, credential reference, model list and overrides while moving the data directory to the new name. This release does not read the old directory automatically. Keep existing credential references even if they contain `STUDIO`: they still hold the working tokens; new references use the `NEWAPI_PROVIDER_` prefix.
-
-Sessions pinned to the old `newapi-studio` route must pick models again under the new route. Other adapters are unaffected. Tool names (`newapi_channels`, `newapi_models`, …) did not change.
-
-## Gateways
-
-1. **Add gateway**: name, site URL and a New API calling token.
-2. **Test connection** reads the model list only and does not make paid model calls; it also shows the gateway version and model counts.
-3. **Activate** switches every subsequent call made through this plugin, or tick "activate after saving".
-4. Switching never rewrites other adapters or your default provider.
-5. Submitted video tasks keep their originating gateway and are never polled on a newly activated one.
-
-Legacy flat `baseURL` / `apiKeyEnv` settings are still readable and are migrated to `channels` on the first settings-page save. Tokens live only in the DSH credential service: they are never echoed to the browser, never written into gateway configuration, never sent to a changed address without being re-entered, and are redacted from errors. Configuration writes carry a revision, so a stale editor gets a conflict instead of overwriting another window.
-
-## Balance
+Quota details:
 
 - Quota comes from `GET /api/usage/token/` (note the trailing slash).
 - Amounts are converted with `/api/status` (`quota_per_unit`, `quota_display_type`, `usd_exchange_rate`), never the top-up price.
 - A token that allows user-quota queries also reports the account balance.
+- An unlimited token shows used quota instead of a meaningless negative remainder.
 - Both numbers are the site's own; a present catalog or balance does not prove an upstream channel can serve a model.
+
+The sidebar shows the active gateway's name and amount, with a health dot; click it to refresh. It collapses to a status dot when the sidebar is a rail.
 
 ## Per-gateway model lists
 
 Each gateway keeps an independent list, even when two gateways point at the same site with the same token:
 
 - **Model capabilities tab** has a gateway picker; the active gateway is marked and its list edits apply to that gateway only.
-- **Fetch models** reads the gateway catalog with a search box plus status (new / added / removed upstream) and kind filters; filtering only changes what is listed, never the current selection. The list scrolls on its own and the action bar stays in view.
+- **Fetch models** reads the gateway catalog with a search box plus status (new / added / removed upstream) and kind filters, grouped by kind; filtering only changes what is listed, never the current selection. The list scrolls on its own and the action bar stays in view.
 - **Remove** only removes the model from this gateway; custom parameters can be kept and the removal can be undone briefly.
 - **Add manually** is for models the gateway can serve but does not list.
-- Gateways created in this version start with an empty list; channels saved before the feature existed stay in automatic mode (all gateway models) until their first edit, which materialises the list from what the gateway currently lists.
+- Gateways created in current versions start with an empty list; channels saved before the feature existed stay in automatic mode (all gateway models) until their first edit, which materialises the list from what the gateway currently lists.
 
 ## Testing models
 
@@ -79,7 +80,13 @@ Each gateway keeps an independent list, even when two gateways point at the same
 - **Upstream model name** (`upstreamModel`): the `model` actually sent. Empty means the local id. Mapping is one hop and applies to chat, image generation, image edits, video and model tests.
 - The editor previews the mapping, resolves automatic protocol/capabilities/pricing from the mapping target, and lets input modalities and reasoning follow the catalog or be pinned. Reset clears every override including the mapping.
 
-Capability data is a hint, not proof: a relay may list a model and still fail to serve it. DSH chat currently accepts text and image input only; PDF, audio and video tags are informational.
+Capability data is a hint, not proof: a relay may list a model and still fail to serve it.
+
+## Models and modalities
+
+models.dev data is cached. Exact matches win; when nothing matches, defaults apply. Base-model matches, defaults and manual overrides are all marked in the UI. Never treat a guessed capability as something the gateway has proven.
+
+The DSH chat interface currently accepts text and image input only. PDF, audio and video tags are catalog metadata and cannot be sent to a DSH chat. Image and video models serve the generation tools and do not appear as chat models.
 
 ## Tools
 
@@ -94,7 +101,9 @@ Capability data is a hint, not proof: a relay may list a model and still fail to
 
 Settings-page actions and these tools share one service, so nothing can drift between the UI and the agent.
 
-## Paid results (v0.7.1)
+**Image and video generation cost money.** A submission whose outcome is unknown is never resent automatically; check the gateway's task log first. Stopping a local watch does not cancel or refund the upstream task.
+
+## Paid results
 
 - A video submission that loses the connection or returns an unreadable body after HTTP 200 is reported as **submission unknown, possibly billed**, and is never resent automatically.
 - A video that finished upstream but failed to download stays **generated, retrying download**. Only GET requests are retried, against refreshed URLs; when the recovery deadline passes it becomes **generated, download unsuccessful**. Do not regenerate.
@@ -103,10 +112,18 @@ Settings-page actions and these tools share one service, so nothing can drift be
 
 ## Verification status
 
-- Real chat, model discovery, quota and per-channel lists have been exercised against a local New API instance.
+- Real chat, model discovery, quota, per-gateway lists and gateway editing have been exercised against a local New API instance (v1.0.0-rc.45).
 - A real image request was rejected with HTTP 503 (no available upstream channel). Successful paid image generation is therefore **not yet verified**; the attachment pipeline is covered by offline tests.
 - Video is **experimental**: no real video channel was available. Submission, polling, download recovery, restart recovery and duplicate-submission prevention are covered offline only.
-- The settings page has been rendered and checked locally against the plugin stylesheet; final visual acceptance requires the connected DSH window.
+- Only one New API deployment has been tested. Other versions and relays may differ in endpoint details.
+
+## Migrating from the former name (v0.7.0)
+
+The plugin was called `dsh-newapi-studio`. The rename covers the package, the loader row and provider route (`newapi-provider`), the HTTP prefix (`/newapi-provider/api/`) and the data directory (`plugin-data/dsh-newapi-provider`).
+
+To migrate an existing installation, back up the profile patch and plugin data, then keep each channel's id, credential reference, model list and overrides while moving the data directory to the new name. Current releases do not read the old directory automatically. Keep existing credential references even if they contain `STUDIO`: they still hold the working tokens; new references use the `NEWAPI_PROVIDER_` prefix.
+
+Sessions pinned to the old `newapi-studio` route must pick models again under the new route. Other adapters are unaffected. Tool names (`newapi_channels`, `newapi_models`, …) did not change.
 
 ## Development
 
@@ -117,9 +134,11 @@ node --check client.js
 npm pack --dry-run --ignore-scripts
 ```
 
-DSH runtime imports are optional peerDependencies supplied by the host, so no DSH package is installed or copied here. Tests use local fake gateways and never read personal credentials.
+To work on a checkout instead of the published package, install the project directory with DSH's plugin manager.
 
-npm publishing, creating a public repository and marketplace submission are separate manual steps; see [PUBLISHING.md](PUBLISHING.md). Keep personal gateway data, credentials, research notes and session screenshots out of the package.
+DSH runtime imports are optional peerDependencies supplied by the host, so no DSH package is installed or copied here. Tests use local fake gateways and never read personal credentials. This repository replaces, rather than depends on, `dsh-gateway-provider`; two adapters cannot own the same provider route.
+
+Release steps are in [PUBLISHING.md](PUBLISHING.md).
 
 MIT License. Uses public DSH exports and pi-ai protocol implementations; no third-party plugin source is vendored.
 
