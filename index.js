@@ -164,6 +164,9 @@ export function apply(ctx, config) {
 
   const modelsDev = new ModelsDev({ enabled: current().useModelsDev !== false, logger: ctx.logger });
   const catalogs = new Catalog({ modelsDev, logger: ctx.logger });
+  // Capability data arriving late must not leave the first catalog (built without
+  // it) cached for the whole TTL.
+  modelsDev.onUpdated = () => catalogs.invalidate();
 
   const catalogFor = async (ch, { signal, force = false } = {}, captured = connFor(ch)) => {
     const apiKey = await keyFor(ch);
@@ -174,17 +177,6 @@ export function apply(ctx, config) {
       const stale = catalogs.peek(conn);
       if (stale) return stale;
       throw new LlmError(redact(`newapi-provider: cannot read the model list from ${gatewayRoot(conn.baseURL)}: ${error.message}`, apiKey), error.code === 'AUTH' ? 'AUTH' : 'TRANSPORT', { cause: error });
-    }
-  };
-
-  const catalog = async (opts = {}) => {
-    try {
-      const value = await catalogFor(channels().active, opts);
-      errors.delete('catalog');
-      return value;
-    } catch (error) {
-      reportError('catalog', error);
-      throw error;
     }
   };
 
@@ -355,11 +347,12 @@ export function apply(ctx, config) {
       channelId: ch.id,
       fetchedAt: value.fetchedAt,
       listMode: enabled ? 'list' : 'auto',
-      models: value.entries.filter((e) => gatewayIds.has(e.id)).map((e) => ({
-        id: e.id, kind: e.kind, vendor: e.vendor, input: e.input,
+      models: value.entries.filter((e) => gatewayIds.has(e.upstreamModel ?? e.id)).map((e) => ({
+        id: e.id, upstreamModel: e.upstreamModel ?? e.id, kind: e.kind, vendor: e.vendor, input: e.input,
         contextWindow: e.contextWindow ?? null, maxTokens: e.maxTokens ?? null,
         reasoning: e.reasoning, pricing: e.pricing,
-        status: !enabled || enabled.has(e.id) ? 'enabled' : 'new',
+        // A gateway model already used through a local id's mapping is not "new".
+        status: !enabled || enabled.has(e.id) || e.upstreamModel !== e.id ? 'enabled' : 'new',
       })),
       missing: enabled
         ? [...enabled].filter((id) => !gatewayIds.has(upstreamModelOf({ id, upstreamModel: ch.models?.[id]?.upstreamModel }))).map((id) => ({ id, custom: ch.models?.[id]?.custom === true }))
@@ -382,16 +375,16 @@ export function apply(ctx, config) {
   };
 
   /** Probe a gateway without saving anything: version, model counts, token quota. */
-  const testGateway = async ({ baseURL, apiKey }) => {
+  const testGateway = async ({ baseURL, apiKey, headers }) => {
     const root = gatewayRoot(baseURL);
     const out = { ok: false, baseURL: root };
     const started = Date.now();
     try {
-      const status = await fetchJson(`${root}/api/status`, { timeoutMs: 8_000 }).catch(() => undefined);
+      const status = await fetchJson(`${root}/api/status`, { headers, timeoutMs: 8_000 }).catch(() => undefined);
       const st = status?.data ?? status;
       out.version = st?.version ?? null;
       out.systemName = st?.system_name ?? null;
-      const models = await fetchJson(`${root}/v1/models`, { apiKey, timeoutMs: 10_000 });
+      const models = await fetchJson(`${root}/v1/models`, { apiKey, headers, timeoutMs: 10_000 });
       const counts = { total: 0, chat: 0, image: 0, video: 0, other: 0 };
       for (const m of models?.data ?? []) {
         counts.total++;
@@ -411,6 +404,12 @@ export function apply(ctx, config) {
   const channelService = new ChannelService({
     ns: settingsNs, current, settings: () => ctx.get('settings'), keyFor, keyConfigured,
     storeKey, unsetKey: async (name) => ctx.get('credentials')?.unset(credentialRef(name)), testGateway,
+    /** Global headers always; channel headers only for the channel's own saved address. */
+    headersFor: (ch, baseURL) => {
+      const global = current().headers ?? {};
+      if (!ch) return { ...global };
+      return gatewayRoot(ch.baseURL) === gatewayRoot(baseURL) ? { ...global, ...(ch.headers ?? {}) } : { ...global };
+    },
     // First list edit on an automatic-mode channel starts from what the gateway lists now.
     gatewayModelIds: async (ch) => (await gatewayCatalog(ch, { force: true })).entries.map((e) => e.id),
     changed: () => {
@@ -437,6 +436,8 @@ export function apply(ctx, config) {
     const captured = structuredClone(ch);
     const conn = connFor(captured);
     const value = await catalogFor(captured, { force }, conn);
+    // A successful read clears the stale diagnostic the page shows under "issues".
+    if (captured.id === channels().active.id) errors.delete('catalog');
     return {
       channelId: captured.id,
       listMode: Array.isArray(captured.enabledModels) ? 'list' : 'auto',
@@ -445,7 +446,8 @@ export function apply(ctx, config) {
       pricingError: value.pricingError,
       entries: value.entries.map((e) => ({
         ...e,
-        override: structuredClone(captured.models?.[e.id] ?? {}),
+        // Own-property read: built-in names such as `toString` are legal model ids.
+        override: structuredClone(Object.hasOwn(captured.models ?? {}, e.id) ? captured.models[e.id] : {}),
         automaticContextWindow: e.automaticContextWindow ?? conn.defaultContextWindow,
         automaticMaxTokens: e.automaticMaxTokens ?? conn.defaultMaxTokens,
         lastTest: tester.last(captured.id, e.id) ?? null,
