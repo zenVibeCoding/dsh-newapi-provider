@@ -274,7 +274,7 @@ window.__ModuleLoader__.load({
       .nas-progress{height:3px;border-radius:2px;background:var(--nas-raised);overflow:hidden;margin:6px 0 2px}.nas-progress>i{display:block;height:100%;background:var(--nas-brand);transition:width .2s}
       .nas-dialog.wide{max-width:760px}
       /* Model discovery: fixed toolbar and action bar, one scrolling result list. */
-      .nas-dialog.nas-discover{display:flex;flex-direction:column;overflow:hidden;max-width:820px}
+      .nas-dialog.nas-discover{display:flex;flex-direction:column;overflow:hidden;max-width:760px;background:var(--nas-bg)}
       .nas-discover .nas-dialog-head{flex-shrink:0;padding-bottom:12px}
       .nas-discover .nas-dialog-body{display:flex;flex-direction:column;gap:9px;flex:1 1 auto;min-height:0;overflow:hidden;padding:0 24px}
       .nas-discover .nas-dialog-foot{flex-shrink:0}
@@ -327,7 +327,6 @@ window.__ModuleLoader__.load({
       .nas-model-channel.is-active svg{color:var(--nas-accent)}
       .nas-mode.warn{color:var(--dsw-alias-state-warn-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 30%,var(--nas-line))}
       /* Model discovery: same visual language as the model table. */
-      .nas-dialog.nas-discover{max-width:760px;background:var(--nas-bg)}
       .nas-discover .nas-dialog-head{padding-bottom:14px}
       .nas-discover .nas-dialog-body{display:flex;flex-direction:column;gap:10px;min-height:0}
       .nas-discover-tools{display:flex;flex-direction:column;gap:8px;flex-shrink:0}
@@ -892,8 +891,8 @@ window.__ModuleLoader__.load({
                       !gone && h('span', { className: 'nas-drow-kind' }, kindLabel),
                       !gone && m.kind === 'chat' && m.contextWindow && h('span', { className: 'nas-drow-num' }, tokens(m.contextWindow)),
                       !gone && (m.input || []).some((i) => i !== 'text') && h('span', { className: 'nas-cap-icons' },
-                        (m.input || []).filter((i) => i !== 'text').map((i) => h('span', { key: i, 'data-tip': `${t('inputModalities')}: ${t(i === 'image' ? 'inputImage' : i === 'video' ? 'inputVideo' : i === 'audio' ? 'inputAudio' : i)}` }, h(Icon, { name: i === 'pdf' ? 'document' : i, size: 11 })))),
-                      !gone && m.reasoning && h('span', { className: 'nas-cap-icons' }, h('span', { 'data-tip': t('reasoning') }, h(Icon, { name: 'bolt', size: 11 })))))),
+                        (m.input || []).filter((i) => i !== 'text').map((i) => h('span', { key: i }, h(Icon, { name: i === 'pdf' ? 'document' : i, size: 11 })))),
+                      !gone && m.reasoning && h('span', { className: 'nas-cap-icons' }, h('span', null, h(Icon, { name: 'bolt', size: 11 })))))),
                   badges);
             })))));
     }
@@ -1066,7 +1065,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.5' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.7.6' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },
