@@ -6,13 +6,15 @@
 
 | 项目 | 状态 |
 | --- | --- |
-| 版本 | 0.8.1（未发布） |
-| 包名 | `dsh-newapi-provider` — npm 上仍是 404，名称可用 |
+| npm | **已发布 0.8.3** — https://www.npmjs.com/package/dsh-newapi-provider （`latest`，2026-10-23 17:48 东八区） |
+| 包内容校验 | 下载 tarball 与仓库逐文件字节一致，19 个文件，shasum 一致，无凭据泄漏 |
+| Git tag | `v0.8.3` 已推送 |
 | 仓库 | https://github.com/zenVibeCoding/dsh-newapi-provider （公开，已加 `dsh-plugin` topic） |
+| 市场投稿 | **未提交**，条目文件已备好：[docs/market-entry.yml](docs/market-entry.yml)，卡片图 [assets/icon-180.png](assets/icon-180.png) |
+| 可投稿时间 | 仓库创建 2026-10-23 07:01 UTC，满 24 小时 = **2026-10-24 15:01（东八区）之后** |
 | 许可证 | MIT，作者 `zenVibeCoding` |
 | 验证环境 | DSH 0.2.1-rc.2 / Node.js 22.19+，`engines.dsh: >=0.2.1-rc.1 <0.3.0-0` |
 | 离线测试 | `npm test`，103 项全过 |
-| 打包 | 19 个文件，无凭据/本机路径 |
 | 真实生图 | **未验证**（网关返回 503 无可用渠道） |
 | 真实视频 | **未验证**（无视频渠道），工具为实验性 |
 
@@ -85,25 +87,28 @@ dsh plugin add dsh-newapi-provider    # 走 npm 而非本地目录
 
 **时间门槛**：仓库创建于 2026-10-23 07:01 UTC，需满 24 小时，即 **2026-10-24 15:01（东八区）之后**再提 PR。
 
-投稿文件内容（保存为 `data/plugins/zenVibeCoding__dsh-newapi-provider.yml`）：
+条目已经写好并校验通过：**[docs/market-entry.yml](docs/market-entry.yml)**（用 js-yaml 解析验证过，分类合法、描述以句号结尾）。目标路径是 `data/plugins/zenVibeCoding__dsh-newapi-provider.yml`，直接复制即可：
 
 ```yaml
 url: https://github.com/zenVibeCoding/dsh-newapi-provider
 name: zenVibeCoding/dsh-newapi-provider
 category: model
 description:
-  en: 'New API gateway provider: multi-channel models with context and modality details, quota, and image and video generation.'
-  zh: 'New API 网关提供商：多渠道模型管理与上下文/多模态标注、额度查询，以及生图与视频生成。'
+  en: 'New API gateway provider: several gateways with one active at a time, per-gateway model lists with context and modality details, quota, and image and video generation tools.'
+  zh: 'New API 网关提供商：多网关同一时间激活一个，每个网关独立的模型清单与上下文/多模态标注、额度查询，以及生图与视频生成工具。'
+icon: https://raw.githubusercontent.com/zenVibeCoding/dsh-newapi-provider/main/assets/icon-180.png
 ```
 
-> 描述里有 `: ` 必须加引号，否则 YAML 解析失败。
+> 描述里有 `: ` 必须加引号，否则 YAML 解析失败（上面英文描述就是这种情况）。
+> 卡片图是 `assets/icon-180.png`（180×180 PNG），市场要求 GitHub 托管的位图；仓库里的 `icon.svg` 是 DSH 插件页用的，不适用于市场卡片。
 
 提交步骤：
 
 ```sh
 gh repo fork awesome-dsh-plugin/awesome-dsh-plugin --clone
 cd awesome-dsh-plugin
-# 写入上面那个 yml（文件名必须是 owner__repo.yml）
+mkdir -p data/plugins
+cp ~/dsh-newapi-provider/docs/market-entry.yml data/plugins/zenVibeCoding__dsh-newapi-provider.yml
 git checkout -b add-dsh-newapi-provider
 git add data/plugins/zenVibeCoding__dsh-newapi-provider.yml
 git commit -m "Add dsh-newapi-provider"
