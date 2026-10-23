@@ -4,6 +4,18 @@ English · [中文](README.zh.md)
 
 A New API gateway workbench for DeepSeek Harness: several gateways with one active at a time, per-gateway model lists and parameter overrides, quota, and image and experimental video generation. **Development build; not published to npm yet.**
 
+![Settings → New API Provider: gateways and connections](docs/screenshots/channels.png)
+
+## Preview
+
+| Model capabilities | Fetch models |
+| --- | --- |
+| ![Per-gateway model list with vendor marks, context/output limits, modalities and test results](docs/screenshots/models.png) | ![Fetch models dialog grouped by kind, with new / added / removed-upstream states](docs/screenshots/discover.png) |
+| **Model editor** | **Sidebar quota** |
+| ![Model editor: display name, upstream mapping, context window, output cap and input modalities](docs/screenshots/editor.png) | ![Active gateway's quota at the sidebar foot](docs/screenshots/sidebar.png) |
+
+The screenshots render this plugin's real components and stylesheet with sample data; gateway names, URLs and amounts are examples. The UI follows the DSH theme, so colours adapt to your skin and dark mode.
+
 ## Features
 
 - Save multiple gateways and activate exactly one. Each keeps its own URL, credential reference, model list and model overrides.

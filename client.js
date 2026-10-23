@@ -839,11 +839,15 @@ window.__ModuleLoader__.load({
       const byKindValues = [...kindOrder.filter((k) => byKind[k] > 0), ...Object.keys(byKind).filter((k) => !kindOrder.includes(k))];
       const query = search.trim().toLowerCase();
       const statusRank = { new: 0, enabled: 1, missing: 2 }; const kindRank = { chat: 0, image: 1, video: 2, audio: 3, embedding: 4, other: 5 };
-      // New models first, then what the channel already has, then what the gateway dropped.
+      // Grouped view (no filter): one block per kind, new models first inside it. Filtered view:
+      // new models first overall. Sorting by status first in the grouped view repeated kind headers.
+      const grouped = kind === 'all' && status === 'all' && !query;
+      const byKindRank = (x, y) => (kindRank[x.kind] ?? 9) - (kindRank[y.kind] ?? 9);
+      const byStatusRank = (x, y) => statusRank[x.status] - statusRank[y.status];
       const shown = rows
         .filter((m) => (status === 'all' || m.status === status) && (kind === 'all' || m.kind === kind)
           && (!query || `${m.id} ${m.vendor ?? ''}`.toLowerCase().includes(query)))
-        .sort((x, y) => statusRank[x.status] - statusRank[y.status] || (kindRank[x.kind] ?? 9) - (kindRank[y.kind] ?? 9) || x.id.localeCompare(y.id));
+        .sort((x, y) => (grouped ? byKindRank(x, y) || byStatusRank(x, y) : byStatusRank(x, y) || byKindRank(x, y)) || x.id.localeCompare(y.id));
       const selectable = shown.filter((m) => m.status === 'new' && !picked.has(m.id));
       const droppable = missing.filter((m) => !m.custom);
       const filtered = Boolean(query) || status !== 'all' || kind !== 'all';
@@ -890,7 +894,7 @@ window.__ModuleLoader__.load({
               const enabled = m.status === 'enabled'; const gone = m.status === 'missing'; const on = enabled || picked.has(m.id);
               const kindLabel = gone ? t('missingBadge') : t(m.kind);
               // A kind group header keeps a long gateway list readable.
-              const header = (kind === 'all' && status === 'all' && !query && (index === 0 || shown[index - 1].kind !== m.kind))
+              const header = (grouped && (index === 0 || shown[index - 1].kind !== m.kind))
                 ? h('div', { className: 'nas-dgroup', key: `g-${m.kind}` }, h('span', null, t(m.kind === 'missing' ? 'statusMissing' : m.kind)), h('span', { className: 'nas-count' }, byKind[m.kind] ?? 0))
                 : null;
               const badges = gone
@@ -909,8 +913,8 @@ window.__ModuleLoader__.load({
                       !gone && m.kind === 'chat' && m.contextWindow && h('span', { className: 'nas-drow-num' }, tokens(m.contextWindow)),
                       !gone && (m.input || []).some((i) => i !== 'text') && h('span', { className: 'nas-cap-icons' },
                         (m.input || []).filter((i) => i !== 'text').map((i) => h('span', { key: i }, h(Icon, { name: i === 'pdf' ? 'document' : i, size: 11 })))),
-                      !gone && m.reasoning && h('span', { className: 'nas-cap-icons' }, h('span', null, h(Icon, { name: 'bolt', size: 11 })))))),
-                  badges);
+                      !gone && m.reasoning && h('span', { className: 'nas-cap-icons' }, h('span', null, h(Icon, { name: 'bolt', size: 11 }))))),
+                  badges));
             })))));
     }
     function RemoveDialog({ channel, model, revision, onClose, onDone }) {
@@ -1082,7 +1086,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.8.0' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.8.1' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },

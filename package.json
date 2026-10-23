@@ -1,8 +1,17 @@
 {
   "name": "dsh-newapi-provider",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "New API gateway for DeepSeek Harness: models with context and modality details, balance, image and video generation.",
   "license": "MIT",
+  "author": "zenVibeCoding",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenVibeCoding/dsh-newapi-provider.git"
+  },
+  "homepage": "https://github.com/zenVibeCoding/dsh-newapi-provider#readme",
+  "bugs": {
+    "url": "https://github.com/zenVibeCoding/dsh-newapi-provider/issues"
+  },
   "type": "module",
   "keywords": [
     "dsh",

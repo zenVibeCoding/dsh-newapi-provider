@@ -4,6 +4,18 @@
 
 DeepSeek Harness 的 New API 渠道与模型工作台。**开发中，尚未发布到 npm。**
 
+![设置 → New API 提供商：渠道与连接](docs/screenshots/channels.png)
+
+## 效果预览
+
+| 模型能力 | 获取模型列表 |
+| --- | --- |
+| ![按渠道独立的模型清单：厂商图标、上下文/输出上限、输入能力与测试结果](docs/screenshots/models.png) | ![获取模型列表：按类型分组，区分新增 / 已添加 / 网关已下架](docs/screenshots/discover.png) |
+| **模型参数编辑** | **侧栏额度** |
+| ![模型编辑器：显示名称、上游映射、上下文窗口、最大输出与输入能力](docs/screenshots/editor.png) | ![侧栏底部显示当前激活渠道的额度](docs/screenshots/sidebar.png) |
+
+截图使用插件真实的组件与样式渲染，数据为示例（渠道名、地址、金额均为虚构）。界面跟随 DSH 主题，配色会随你的皮肤和深色模式变化。
+
 ## 能做什么
 
 - 保存多个网关，每个渠道独立保存地址、凭据引用与模型参数；一次只激活一个。
