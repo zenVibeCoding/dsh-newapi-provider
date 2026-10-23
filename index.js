@@ -21,7 +21,7 @@ import { ModelsDev } from './lib/modelsdev.js';
 import { BalanceService } from './lib/balance.js';
 import { registerMedia } from './lib/media.js';
 import { fetchJson, fingerprint, gatewayRoot, redact } from './lib/util.js';
-import { ChannelService, resolveChannels, taskChannel, registerAsyncEffect } from './lib/channels.js';
+import { ChannelService, resolveChannels, taskChannel, registerAsyncEffect, validateBaseURL } from './lib/channels.js';
 import { ModelTester } from './lib/model-test.js';
 export { resolveChannels } from './lib/channels.js';
 
@@ -244,10 +244,27 @@ export function apply(ctx, config) {
   });
   ctx.llm.registerModelDiscovery(settingsNs, async (request, signal) => {
     const ch = channels().active;
-    const captured = connFor(ch);
-    if (request.baseURL && gatewayRoot(request.baseURL) !== gatewayRoot(ch.baseURL) && !request.apiKey) throw new Error('a draft gateway requires its own token');
+    const saved = connFor(ch);
+    const draftRoot = typeof request.baseURL === 'string' && request.baseURL.trim()
+      ? validateBaseURL(request.baseURL)
+      : undefined;
+    const isDraft = draftRoot !== undefined && draftRoot !== gatewayRoot(ch.baseURL);
+    if (isDraft && !request.apiKey) throw new Error('a draft gateway requires its own token');
     const apiKey = request.apiKey || await keyFor(ch);
-    const conn = { ...captured, ...(request.baseURL ? { baseURL: request.baseURL } : {}), keyFingerprint: fingerprint(apiKey) };
+    // A draft address is a different host: never forward this channel's headers,
+    // and never cache the draft under the saved channel's identity.
+    const conn = isDraft
+      ? {
+        ...saved,
+        channelId: `${ch.id}#draft`,
+        baseURL: draftRoot,
+        headers: { ...(current().headers ?? {}) },
+        overrides: {},
+        enabledModels: undefined,
+        overridesRev: fingerprint(`${ch.id}|draft|${draftRoot}`),
+        keyFingerprint: fingerprint(apiKey),
+      }
+      : { ...saved, keyFingerprint: fingerprint(apiKey) };
     const value = await catalogs.get(conn, apiKey, { signal, force: true });
     return chatModels(value).map((e) => ({
       id: e.id,
