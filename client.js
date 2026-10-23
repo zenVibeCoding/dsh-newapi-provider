@@ -56,6 +56,7 @@ window.__ModuleLoader__.load({
       levelColumn: '档位', apiValueColumn: 'API 参数值', apiValuePlaceholder: '留空则不发送',
       levelPlaceholder: '档位名，可自定义', levelInvalid: '档位只能用 1-24 位小写字母、数字、- 或 _',
       levelDuplicate: '档位名重复了', levelNeedsValue: '自定义档位必须填写 API 参数值',
+      levelCustomOption: '自定义…', levelBackToPreset: '改回内置档位',
       addLevel: '添加档位', removeLevel: '移除该档位',
       levelsHelp: '不同厂商的推理档位并不相同：这里决定对话里可选哪些档位，以及每个档位发给网关的参数值。关闭开关则跟随模型自动识别。',
       reasoningEnabled: '声明支持推理', hideModel: '隐藏该模型', modelSave: '保存参数', reset: '恢复自动识别',
@@ -145,6 +146,7 @@ window.__ModuleLoader__.load({
       levelColumn: 'Level', apiValueColumn: 'API value', apiValuePlaceholder: 'Empty sends nothing',
       levelPlaceholder: 'Level name, custom allowed', levelInvalid: 'Levels use 1-24 lowercase letters, digits, - or _',
       levelDuplicate: 'Duplicate level name', levelNeedsValue: 'A custom level needs an API value',
+      levelCustomOption: 'Custom…', levelBackToPreset: 'Back to built-in levels',
       addLevel: 'Add level', removeLevel: 'Remove level',
       levelsHelp: 'Vendors differ: this decides which levels the chat selector offers and what each one sends upstream. Leave the switch off to follow the detected set.',
       reasoningEnabled: 'Declare reasoning support', hideModel: 'Hide model', modelSave: 'Save parameters', reset: 'Use automatic values',
@@ -420,6 +422,10 @@ window.__ModuleLoader__.load({
       .nas-levels-add{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;border:1px solid var(--nas-line);border-radius:8px;background:var(--dsw-alias-bg-base);color:var(--nas-text);padding:6px 10px;font-size:12px;cursor:pointer}
       .nas-levels-add:hover:not(:disabled){border-color:var(--nas-brand)}
       .nas-levels-add:disabled{opacity:.5;cursor:default}
+      .nas-levels-custom{display:flex;align-items:center;gap:6px;min-width:0}
+      .nas-levels-custom input{flex:1;min-width:0}
+      .nas-levels-back{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;flex-shrink:0;border:1px solid var(--nas-line);border-radius:6px;background:var(--dsw-alias-bg-base);color:var(--nas-sub);cursor:pointer}
+      .nas-levels-back:hover:not(:disabled){color:var(--nas-text);border-color:var(--nas-brand)}
       /* Tooltips: instant, themed, keyboard accessible. */
       .nas [data-tip]{position:relative}
       .nas [data-tip]::after{content:attr(data-tip);position:absolute;z-index:60;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);width:max-content;max-width:270px;padding:6px 9px;border-radius:7px;border:1px solid var(--nas-line);background:var(--dsw-alias-bg-overlay);color:var(--nas-text);font-size:11px;font-weight:400;line-height:1.55;text-align:left;white-space:pre-line;box-shadow:0 8px 24px color-mix(in srgb,var(--dsw-alias-label-primary) 16%,transparent);opacity:0;pointer-events:none;transition:opacity .12s}
@@ -623,12 +629,15 @@ window.__ModuleLoader__.load({
      * Off = follow what the model declares; on = the table is exactly what ships.
      */
     function ReasoningLevelsEditor({ enabled, rows, detected, busy, onToggle, onChange }) {
-      const listId = useId();
+      const CUSTOM_CHOICE = '__custom';
       const t = useT();
       const setRow = (index, patch) => onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
-      // A new row starts empty so the user can type a custom level name; presets stay absent
-      // from the picker only while they are already used.
-      const add = () => onChange([...rows, { level: '', value: '' }]);
+      // A new row starts on the first preset nobody uses yet; when all seven are taken it
+      // starts as a custom row instead, which is the only case where a name is typed.
+      const add = () => {
+        const free = LEVELS.find((level) => !rows.some((row) => row.level === level));
+        onChange([...rows, free ? { level: free, value: defaultWireFor(free) } : { level: '', value: '' }]);
+      };
       const used = new Set(rows.map((row) => row.level).filter(Boolean));
       const problems = rows.map((row) => {
         if (!row.level) return { row: true };
@@ -653,12 +662,31 @@ window.__ModuleLoader__.load({
             h('div', { className: 'nas-levels-row head' },
               h('span', null, t('levelColumn')), h('span', null, t('apiValueColumn')), h('span', { 'aria-hidden': true })),
             rows.map((row, index) => h('div', { className: 'nas-levels-row', key: `${row.level}-${index}` },
-              h('input', {
-                value: row.level, disabled: busy, lang: 'en', spellCheck: false, list: `${listId}-levels`,
-                placeholder: t('levelPlaceholder'), 'aria-label': t('levelColumn'),
-                'aria-invalid': Boolean(problems[index].invalid || problems[index].duplicate),
-                onChange: (e) => setRow(index, { level: e.target.value.trim().toLowerCase() }),
-              }),
+              LEVELS.includes(row.level)
+                ? h('select', {
+                  value: row.level, disabled: busy, lang: 'en', 'aria-label': t('levelColumn'),
+                  onChange: (e) => setRow(index, e.target.value === CUSTOM_CHOICE
+                    ? { level: '' }                                  // switch this row to a typed name
+                    : { level: e.target.value, value: row.value || defaultWireFor(e.target.value) }),
+                },
+                LEVELS.map((level) => h('option', {
+                  key: level, value: level, lang: 'en',
+                  disabled: level !== row.level && used.has(level),
+                }, level)),
+                h('option', { value: CUSTOM_CHOICE }, t('levelCustomOption')))
+                : h('div', { className: 'nas-levels-custom' },
+                  h('input', {
+                    value: row.level, disabled: busy, lang: 'en', spellCheck: false, autoFocus: true,
+                    placeholder: t('levelPlaceholder'), 'aria-label': t('levelColumn'),
+                    'aria-invalid': Boolean(problems[index].invalid || problems[index].duplicate),
+                    onChange: (e) => setRow(index, { level: e.target.value.trim().toLowerCase() }),
+                  }),
+                  h('button', { type: 'button', className: 'nas-levels-back', disabled: busy,
+                    'aria-label': t('levelBackToPreset'), 'data-tip': t('levelBackToPreset'), 'data-tip-align': 'end',
+                    onClick: () => {
+                      const free = LEVELS.find((level) => !used.has(level));
+                      setRow(index, free ? { level: free, value: defaultWireFor(free) } : { level: LEVELS[0], value: defaultWireFor(LEVELS[0]) });
+                    } }, h(Icon, { name: 'refresh', size: 12 }))),
               h('input', {
                 value: row.value, disabled: busy, lang: 'en', spellCheck: false, placeholder: t('apiValuePlaceholder'),
                 'aria-label': t('apiValueColumn'), onChange: (e) => setRow(index, { value: e.target.value }),
@@ -1249,7 +1277,7 @@ window.__ModuleLoader__.load({
       const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
       const count = (kind) => entries.filter((e) => e.kind === kind).length;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.3' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.4' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
         h('div', { className: 'nas-summary' },
